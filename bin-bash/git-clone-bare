@@ -1,0 +1,52 @@
+#! /bin/bash
+
+# Copyright © 2021, 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ -v TMPDIR && -d "${TMPDIR}" ]]
+then
+	workdir="${TMPDIR}"
+elif [[ "`uname -s`" == 'Linux' && -d '/tmp' ]]
+	workdir='/tmp'
+fi
+
+if   [[ -v USER ]]
+then
+	prefix="${USER}"
+elif [[ -v USERNAME ]]
+then
+	prefix="${USERNAME}"
+elif which whoami > /dev/null 2>&1
+then
+	prefix="`whoami`"
+fi
+
+if   [[ -v workdir && -v prefix ]]
+then
+	treedir="/${workdir}/${prefix}-git-clone"
+else
+	echo "ERROR: Unable to find a temporary directory for the initial checkout"
+	exit 1
+fi
+
+case $# in
+	1)
+		gitdir=`basename "$1"`
+		git clone --no-checkout --separate-git-dir="${gitdir}" "$1" "${treedir}/${gitdir}" \
+		&& sed -i -e 's/bare = false/bare = true/' "${gitdir}/config" \
+		&& rm -rf "${treedir}/${gitdir}"
+	;;
+	2)
+		gitdir=`basename "$1"`
+		git clone --reference-if-able "$2" --no-checkout --separate-git-dir="${gitdir}" "$1" "${treedir}/${gitdir}" \
+		&& sed -i -e 's/bare = false/bare = true/' "${gitdir}/config" \
+		&& rm -rf "${treedir}/${gitdir}" \
+		&& git --git-dir="${gitdir}" remote add upstream `git --git-dir="$2" config --get remote.origin.url`
+	;;
+	*)
+		echo 'usage: git clone-bare <remote-repository> [local-reference-repository]'
+	;;
+esac

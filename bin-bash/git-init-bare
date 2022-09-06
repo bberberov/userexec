@@ -1,0 +1,47 @@
+#! /bin/bash
+
+# Copyright © 2021, 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ -v TMPDIR && -d "${TMPDIR}" ]]
+then
+	workdir="${TMPDIR}"
+elif [[ "`uname -s`" == 'Linux' && -d '/tmp' ]]
+	workdir='/tmp'
+fi
+
+if   [[ -v USER ]]
+then
+	prefix="${USER}"
+elif [[ -v USERNAME ]]
+then
+	prefix="${USERNAME}"
+elif which whoami > /dev/null 2>&1
+then
+	prefix="`whoami`"
+fi
+
+if   [[ -v workdir && -v prefix ]]
+then
+	treedir="/${workdir}/${prefix}-git-init"
+else
+	echo "ERROR: Unable to find a temporary directory for the initial checkout"
+	exit 1
+fi
+
+if   (( $# == 1 ))
+then
+	git init --separate-git-dir="$1" "${treedir}" \
+	&& touch "${treedir}/.gitignore" \
+	&& git --git-dir="$1" --work-tree="${treedir}" add . \
+	&& git --git-dir="$1" --work-tree="${treedir}" commit -m 'Initial Commit' > /dev/null \
+	&& rm -rf "${treedir}" \
+	&& sed -i -e 's/bare = false/bare = true/' "$1/config" \
+	&& rm -f "$1/COMMIT_EDITMSG" \
+	&& git --git-dir="$1" --no-pager log --format=oneline
+else
+	echo 'usage: git init-bare <path>'
+fi
