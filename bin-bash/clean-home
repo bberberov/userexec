@@ -1,0 +1,39 @@
+#! /bin/bash
+
+# Copyright © 2021, 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   which npm > /dev/null 2>&1
+then
+	echo 'Clearing npm cache ...'
+	npm cache clear --force
+fi
+
+if   which pip3 > /dev/null 2>&1
+then
+	echo 'Clearing pip3 cache ...'
+	pip3 cache purge
+fi
+
+if   [[ -d "${HOME}/.cache/kio_http" ]] && which find > /dev/null 2>&1
+then
+	echo 'Clearing KDE web cache older than 30 days ...'
+	find "${HOME}/.cache/kio_http" -name '*[0-9]*' -mtime +30 -delete
+fi
+
+if   [[ -d "${HOME}/rpmbuild" ]]
+then
+	echo -n 'Clearing rpmbuild in home directory ...'
+	for dir in 'BUILD' 'BUILDROOT' 'RPMS' 'SOURCES' 'SPECS' 'SRPMS'
+	do
+		if   [[ -d "${HOME}/rpmbuild/${dir}" ]]
+		then
+			echo -n " ${dir}"
+			rm -rf "${HOME}/rpmbuild/${dir}"/*
+		fi
+	done
+	echo
+fi

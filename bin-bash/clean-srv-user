@@ -1,0 +1,13 @@
+#! /bin/bash
+
+# Copyright © 2021, 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ -d "/srv/user/${USER}/pim/firefox" ]] && which find > /dev/null 2>&1
+then
+	echo "Clearing Firefox cert revocations older than 30 days ..."
+	find "/srv/user/${USER}/pim/firefox"/*/settings/security-state/cert-revocations -type f -mtime +30 -delete
+fi

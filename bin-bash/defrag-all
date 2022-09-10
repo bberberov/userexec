@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Copyright © 2021, 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+for command in 'whoami' 'blkid' 'lsblk'
+do
+	if   ! which "${command}" > /dev/null 2>&1
+	then
+		echo "ERROR: ${command} command is not available"
+		exit 1
+	fi
+done
+
+if   [[ "`whoami`" == 'root' ]]
+then
+	for storage in `blkid -o device --match-token TYPE="ext4" | sort`
+	do
+		if   [[ "`lsblk -n -o rota ${storage} | tr -d '[:space:]'`" == '1' ]]
+		then
+			echo -n "Defragmenting ${storage}"
+			for (( i=1 ; i <= 3 ; i+=1 ))
+			do
+				echo -n " ... $i"
+				e4defrag "${storage}" > /dev/null
+				sleep 3
+				sync
+				sleep 1
+			done
+			echo " ... Done"
+		fi
+	done
+else
+	echo "You need to run this command as root"
+	exit 1
+fi
