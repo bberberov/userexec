@@ -1,0 +1,41 @@
+#! /bin/bash
+
+# Copyright © 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ "`adb get-state`" != 'device' ]]
+then
+	echo "ERROR: Default Android device is not available" > /dev/stderr
+	exit 1
+fi
+
+sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
+
+if   (( "${sdk}" < 24 || 29 < "${sdk}" ))
+then
+	command='pm'
+else
+	command='cmd package'
+fi
+
+echo 'Permission Groups:'
+echo
+adb shell "${command} list permission-groups" | sed -e 's/\r//g; s/^permission group://' | sort
+echo
+echo
+echo 'Permissions:'
+echo
+adb shell "${command} list permissions -g -f" \
+| tail -n +3 \
+| tr -d '\r' \
+| sed -e '/+ group:/h; /+ ungrouped:/{ h; s/$/\t\t/; }; /\+ permission:/{ x; p; x; }; /^$/d' \
+| sed -E -e '/\+ (group|ungrouped|permission):/{ :begin; N; s/\n([[:space:]]+[[:alnum:]]+:)/\t\1/; s/\n([[:alnum:]])/  \1/; tbegin; P; D; }' \
+| sed -E -e '/\+ (group:[[:graph:]]+|ungrouped:)$/{N; s/\n[[:space:]]+\+/\t+/}' \
+| sort \
+| sed -e 's/.\+\t+ permission:/\t+ permission:/' \
+| sed -e '/+ group/{ s/\t\s\+/\n\t/g; s/$/\n\tpermissions:/; }; /+ permission:/{s/\t\s\+/\n\t\t/g}; /+ ungrouped:/s/\t\t//' \
+| sed -E -e '/\t(description|label):null/s/null//; /\t?[+]/s/(group|permission)://; /^(\t|[+])/s/([[:space:]][^:]+):/\1: /' \
+| sed -E -e '/\tprotectionLevel: /s/[|]/, /g'

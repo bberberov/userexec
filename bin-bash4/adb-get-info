@@ -1,0 +1,79 @@
+#! /bin/bash
+# bash 4.0 minimum - readarray
+
+# Copyright © 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ "`adb get-state`" != 'device' ]]
+then
+	echo "ERROR: Default Android device is not available"
+	exit 1
+fi
+
+declare -a lines
+declare -A props
+
+readarray -t lines < <(adb shell 'getprop' | tr -d '\r[]')
+
+for line in "${lines[@]}"
+do
+   key="${line%%: *}"
+   value="${line#*: }"
+   props[${key}]="${value}"
+done
+
+echo "S/N: ${props['ro.serialno']}"
+echo
+echo "Brand : ${props['ro.product.brand']}"
+echo "Name  : ${props['ro.product.name']}"
+echo
+echo "Manufacturer : ${props['ro.product.manufacturer']}"
+echo "Model        : ${props['ro.product.model']}"
+echo "Device       : ${props['ro.product.device']}"
+echo "Hardware     : ${props['ro.hardware']}"
+echo "Board        : ${props['ro.product.board']}"
+echo "Platform     : ${props['ro.board.platform']}"
+echo
+echo "ABI      : ${props['ro.product.cpu.abi']}"
+echo "ABI list : ${props['ro.product.cpu.abilist']}"
+echo "ABI 32   : ${props['ro.product.cpu.abilist32']}"
+echo "ABI 64   : ${props['ro.product.cpu.abilist64']}"
+echo
+echo "LCD Density : ${props['ro.sf.lcd_density']}"
+echo
+echo "Android Version : ${props['ro.build.version.release']}"
+echo "Android SDK     : ${props['ro.build.version.sdk']}"
+echo "Build Date      : `date --iso-8601 --date=@${props['ro.build.date.utc']}`"
+echo "Security Patch  : ${props['ro.build.version.security_patch']}"
+echo
+echo "Network Hostname : ${props['net.hostname']}"
+echo "Bluetooth Name   : ${props['net.bt.name']}"
+echo
+case "${props['gsm.current.phone-type']}" in
+	1)
+echo 'Network Type     : GSM'
+	;;
+	2)
+echo 'Network Type     : CDMA'
+	;;
+	*)
+echo "Network Type     : Unknown (${props['gsm.current.phone-type']})"
+	;;
+esac
+echo "Operator Name    : ${props['gsm.operator.alpha']}"
+echo "Operator ID      : ${props['gsm.operator.numeric']}"
+echo "Operator IDP     : ${props['gsm.operator.idpstring']}"
+echo "Operator Country : ${props['gsm.operator.iso-country']}"
+echo
+echo "Google ClientIDBase    : ${props['ro.com.google.clientidbase']}"
+echo "Google ClientIDBase.MS : ${props['ro.com.google.clientidbase.ms']}"
+echo
+echo "JVM Heap Size         : ${props['dalvik.vm.heapsize']}"
+echo "JVM Heap Max Free     : ${props['dalvik.vm.heapmaxfree']}"
+echo "JVM Heap Min Free     : ${props['dalvik.vm.heapminfree']}"
+echo "JVM Heap Start Size   : ${props['dalvik.vm.heapstartsize']}"
+echo "JVM Heap Growth Limit : ${props['dalvik.vm.heapgrowthlimit']}"
+echo "JVM Heap Utilization  : ${props['dalvik.vm.heaptargetutilization']}"

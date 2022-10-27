@@ -1,0 +1,82 @@
+#! /bin/bash
+
+# Copyright © 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ "`adb get-state`" != 'device' ]]
+then
+	echo "ERROR: Default Android device is not available" > /dev/stderr
+	exit 1
+fi
+
+sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
+
+if   (( "${sdk}" < 24 || 29 < "${sdk}" ))
+then
+	command='pm'
+else
+	command='cmd package'
+fi
+
+function pkgExists() {
+	if   (( "${sdk}" < 24 ))
+	then
+		[[ -n "`adb shell pm path $1`" ]] && true || false
+	else
+		adb shell "pm path $1" > /dev/null
+	fi
+}
+
+function pkgPath() {
+	adb shell "pm path $1" | sed -e 's/\r//g; s/^package://'
+}
+
+function pkgRemoveNormal() {
+	echo -n "Removing $1 ... "
+	adb shell "pm uninstall $1"
+}
+
+function pkgRemoveForced() {
+	echo -n "Removing $1 forcefully ... "
+	adb shell "pm uninstall --user 0 $1"
+}
+
+if   pkgExists "$1"
+then
+	pkg_path="`pkgPath $1`"
+
+	if
+		[[ "${pkg_path:0:6}"  == '/data/'
+		|| "${pkg_path:0:20}" == '/oem/removeable-app/'
+		]]
+	then
+		pkgRemoveNormal "$1"
+	elif [[ "${pkg_path:0:8}" == '/system/' ]]
+	then
+		if
+			[[ "${pkg_path:0:32}" == '/system/custpack/app/removeable/'
+			|| "${pkg_path:0:26}" == '/system/vendor/preset-app/'
+			]]
+		then
+			pkgRemoveNormal "$1"
+		else
+			pkgRemoveForced "$1"
+		fi
+	elif
+		[[ "${pkg_path:0:6}" == '/apex/'
+		|| "${pkg_path:0:8}" == '/vendor/'
+		|| "${pkg_path:0:9}" == '/product/'
+		]]
+	then
+		pkgRemoveForced "$1"
+	else
+		echo -n "Unknown app path prefix: "
+		pkgPath "$1"
+		exit 1
+	fi
+else
+	echo "Package $1 does not exist"
+fi

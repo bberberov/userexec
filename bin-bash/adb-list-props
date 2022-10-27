@@ -1,0 +1,15 @@
+#! /bin/bash
+
+# Copyright © 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ "`adb get-state`" != 'device' ]]
+then
+	echo "ERROR: Default Android device is not available"
+	exit 1
+fi
+
+adb shell 'getprop' | sed -e 's/\r//g; s/^\[//; s/\]: \[/: /; s/\]$//' | sort

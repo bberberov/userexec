@@ -1,0 +1,145 @@
+#! /bin/bash
+
+# Copyright © 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ "`adb get-state`" != 'device' ]]
+then
+	echo "ERROR: Default Android device is not available" > /dev/stderr
+	exit 1
+fi
+
+sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
+
+if   (( "${sdk}" < 23 ))
+then
+	bugfix_1='sed -E -e "
+		/^\t\t\t(disabled|enabled)Components:/{
+			:begin
+			n
+			/^\t\t\t(disabled|enabled)Components:/bbegin
+			s/^\t\t\t/\t\t\t\t/
+			tbegin
+		}"
+	'
+else
+	bugfix_1='cat'
+fi
+
+adb shell 'dumpsys package packages' \
+| tr -d '\r' \
+| filter-indent-2sp-to-tab \
+\
+| sed -E -e '
+	/^\t\t(pkg|applicationInfo|signatures)=/d
+	/^\t\t(primaryCpuAbi|secondaryCpuAbi|versionName)=null/d
+
+	/^\tPackage \[/{
+		s/ \[/ /
+		s/\].*/:/
+	}
+	/^\t\tsharedUser=/{
+		s/=[^[:space:]]+ /=/
+		s/}//
+	}
+	/^\t\tUser [0-9]+:/{
+		s/^\t\tUser /\t\tuser /
+		s/[[:space:]]+([^[:space:]]+)=([^[:space:]]+)/\n\t\t\t\1=\2/g
+	}
+	/^\t\tuserId=/s/[[:space:]]+gids=/\n\t\tgids=/
+	/^\t\tpermissionsFixed=/{
+		s/[[:space:]]+haveGids=/\n\t\thaveGids=/
+		s/[[:space:]]+installStatus=/\n\t\tinstallStatus=/
+	}
+	/^\t\tinstallPermissionsFixed=/s/[[:space:]]+installStatus=/\n\t\tinstallStatus=/
+	/^\t\tversionCode=/{ s/versionCode=[0-9]+[[:space:]]+//; s/(minSdk=[0-9]+)[[:space:]]+/\1\n\t\t/; }
+
+	s/lastDisabledCaller: /lastDisabledCaller=/
+' \
+| sed -E -e '
+	/^\t\toverlay paths:/{
+		:begin
+		N
+		s/:\n[[:space:]]+\//: \//
+		tbegin
+		s/\n[[:space:]]+\//, \//
+		tbegin
+	}
+' \
+| sed -E -e '
+	/^\t\toverlay paths:/{ h; d; }
+	/^\tPackage/{ x; /[[:alnum:]]/p; x; }
+' \
+| sed -E -e '
+	/^\t\toverlay paths:/{
+		s/: /:\n\t\t\t/
+		s/, /\n\t\t\t/g
+	}
+' \
+| sed -E -e '
+	/^ tempRestrict=/{
+		s/^ /\t\t\t/
+		s/[[:space:]]+restrict=/\n\t\t\trestrict=/
+	}
+' \
+| eval "${bugfix_1}" \
+\
+| sed -E -e '
+/^[[:space:]]+flags=/s/flags=/flags        =/
+                  s/pkgFlags=/flags-pkg    =/
+                s/pkgFlagsEx=/flags-pkgEx  =/
+              s/privateFlags=/flags-private=/
+
+         s/primaryCpuAbi=/cpuABI-primary  =/
+       s/secondaryCpuAbi=/cpuABI-secondary=/
+
+              s/codePath=/path-app-code               =/
+          s/resourcePath=/path-app-resource           =/
+s/legacyNativeLibraryDir=/path-app-legacyNativeLibrary=/
+               s/dataDir=/path-data                   =/
+
+             s/timeStamp=/time-stamp       =/
+      s/firstInstallTime=/time-firstInstall=/
+        s/lastUpdateTime=/time-lastUpdate  =/
+
+                s/userId=/id-User      =/
+      /^\t\tgids=/s/gids=/id-gids      =/
+            s/sharedUser=/id-sharedUser=/
+
+                s/minSdk=/sdk-min   =/
+             s/targetSdk=/sdk-target=/
+
+/^[[:space:]]+ceDataInode=/d
+
+          /^[[:space:]]+enabled=/s/enabled=/state-enabled      =/
+            /^[[:space:]]+hidden=/s/hidden=/state-hidden       =/
+      /^[[:space:]]+installed=/s/installed=/state-installed    =/
+          /^[[:space:]]+instant=/s/instant=/state-instant      =/
+  /^[[:space:]]+notLaunched=/s/notLaunched=/state-notLaunched  =/
+        /^[[:space:]]+restrict=/s/restrict=/state-restrict     =/
+          /^[[:space:]]+stopped=/s/stopped=/state-stopped      =/
+      /^[[:space:]]+suspended=/s/suspended=/state-suspended    =/
+/^[[:space:]]+tempRestrict=/s/tempRestrict=/state-restrict-temp=/
+
+       s/permissionsFixed=/permissions-fixed=/
+s/installPermissionsFixed=/permissions-fixed=/
+     s/grantedPermissions:/permissions-granted:/
+   s/declared permissions:/permissions-declared:/
+    s/install permissions:/permissions-install:/
+    s/runtime permissions:/permissions-runtime:/
+          s/overlay paths:/paths-overlay:/
+  s/usesOptionalLibraries:/usesLibrariesOptional:/
+     s/disabledComponents:/components-disabled:/
+      s/enabledComponents:/components-enabled:/
+' \
+| filter-presort-indented \
+| sort \
+| filter-postsort-indented \
+\
+| sed -E -e '
+	/^[[:space:]]+[^[:space:]=]+[[:space:]]*=/s/=/ = /
+	/^[[:space:]]+Package/i\\
+'

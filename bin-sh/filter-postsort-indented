@@ -1,0 +1,39 @@
+#! /bin/sh
+
+# Copyright © 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+# Works up to a depth of 12 indentations
+
+sed -E -e '
+	/[^\t]\t\t\t\t\t\t\t\t\t\t\t\t\t\t$/s/\t\t\t\t\t\t\t\t\t\t\t\t\t\t$//
+	/[^\t]\t\t\t\t\t\t\t\t\t\t\t\t\t$/s/\t\t\t\t\t\t\t\t\t\t\t\t\t$//
+	/[^\t]\t\t\t\t\t\t\t\t\t\t\t\t$/s/\t\t\t\t\t\t\t\t\t\t\t\t$//
+	/[^\t]\t\t\t\t\t\t\t\t\t\t\t$/s/\t\t\t\t\t\t\t\t\t\t\t$//
+	/[^\t]\t\t\t\t\t\t\t\t\t\t$/s/\t\t\t\t\t\t\t\t\t\t$//
+	/[^\t]\t\t\t\t\t\t\t\t\t$/s/\t\t\t\t\t\t\t\t\t$//
+	/[^\t]\t\t\t\t\t\t\t\t$/s/\t\t\t\t\t\t\t\t$//
+	/[^\t]\t\t\t\t\t\t\t$/s/\t\t\t\t\t\t\t$//
+	/[^\t]\t\t\t\t\t\t$/s/\t\t\t\t\t\t$//
+	/[^\t]\t\t\t\t\t$/s/\t\t\t\t\t$//
+	/[^\t]\t\t\t\t$/s/\t\t\t\t$//
+	/[^\t]\t\t\t$/s/\t\t\t$//
+	/[^\t]\t\t$/s/\t\t$//
+
+	/^[^\t]+\t/s/^[^\t]+//
+	/^\t[^\t]+\t\t/s/^\t[^\t]+//
+	/^\t\t[^\t]+\t\t\t/s/^\t\t[^\t]+//
+	/^\t\t\t[^\t]+\t\t\t\t/s/^\t\t\t[^\t]+//
+	/^\t\t\t\t[^\t]+\t\t\t\t\t/s/^\t\t\t\t[^\t]+//
+	/^\t\t\t\t\t[^\t]+\t\t\t\t\t\t/s/^\t\t\t\t\t[^\t]+//
+	/^\t\t\t\t\t\t[^\t]+\t\t\t\t\t\t\t/s/^\t\t\t\t\t\t[^\t]+//
+	/^\t\t\t\t\t\t\t[^\t]+\t\t\t\t\t\t\t\t/s/^\t\t\t\t\t\t\t[^\t]+//
+	/^\t\t\t\t\t\t\t\t[^\t]+\t\t\t\t\t\t\t\t\t/s/^\t\t\t\t\t\t\t\t[^\t]+//
+	/^\t\t\t\t\t\t\t\t\t[^\t]+\t\t\t\t\t\t\t\t\t\t/s/^\t\t\t\t\t\t\t\t\t[^\t]+//
+	/^\t\t\t\t\t\t\t\t\t\t[^\t]+\t\t\t\t\t\t\t\t\t\t\t/s/^\t\t\t\t\t\t\t\t\t\t[^\t]+//
+	/^\t\t\t\t\t\t\t\t\t\t\t[^\t]+\t\t\t\t\t\t\t\t\t\t\t\t/s/^\t\t\t\t\t\t\t\t\t\t\t[^\t]+//
+	/^\t\t\t\t\t\t\t\t\t\t\t\t[^\t]+\t\t\t\t\t\t\t\t\t\t\t\t\t/s/^\t\t\t\t\t\t\t\t\t\t\t\t[^\t]+//
+' < /dev/stdin

@@ -1,0 +1,52 @@
+#! /bin/bash
+# bash 4.0 minimum - readarray
+
+# Copyright © 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ "`adb get-state`" != 'device' ]]
+then
+	echo "ERROR: Default Android device is not available"
+	exit 1
+fi
+
+readarray -t lines < <(adb shell 'getprop' | sed -e 's/\r//g; s/^\[//; s/\]: \[/: /; s/\]$//' | sort)
+
+declare -a ancestors
+for line in "${lines[@]}"
+do
+	key="${line%%: *}"
+	value="${line#*: }"
+	IFS='.' key_list=($key)
+
+	for (( i=0; i < ${#ancestors[@]}; i+=1 ))
+	do
+		if [[ "${ancestors[$i]}" != "${key_list[$i]}" ]]
+		then
+			ancestors[$i]=${key_list[$i]}
+			break
+		fi
+	done
+
+	for (( j=$i; j < ${#key_list[@]}; j+=1 ))
+	do
+		for (( k=0; k < j; k+=1 ))
+		do
+			echo -n '  '
+		done
+
+		echo -n "${key_list[$j]}"
+
+		ancestors[$j]=${key_list[$j]}
+
+		if (( j+1 == ${#key_list[@]} ))
+		then
+			echo ": ${value}"
+		else
+			echo ":"
+		fi
+	done
+done

@@ -1,0 +1,87 @@
+#! /bin/sh
+
+# Copyright © 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+# Works up to a depth of 12 indentations
+
+sed -E -e '
+	/^\t\t\t\t\t\t\t\t\t\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t\t\t\t\t\t\t\t\t\t/; }
+	/^\t\t\t\t\t\t\t\t\t\t\t\t\t/{ x; p; x; }' < /dev/stdin \
+| sed -E -e '
+	/^\t\t\t\t\t\t\t\t\t\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t\t\t\t\t\t\t\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t\t\t\t\t\t\t\t\t/; }
+	/^\t\t\t\t\t\t\t\t\t\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t\t\t\t\t\t\t\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t\t\t\t\t\t\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t\t\t\t\t\t\t\t/; }
+	/^\t\t\t\t\t\t\t\t\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t\t\t\t\t\t\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t\t\t\t\t\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t\t\t\t\t\t\t/; }
+	/^\t\t\t\t\t\t\t\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t\t\t\t\t\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t\t\t\t\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t\t\t\t\t\t/; }
+	/^\t\t\t\t\t\t\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t\t\t\t\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t\t\t\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t\t\t\t\t/; }
+	/^\t\t\t\t\t\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t\t\t\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t\t\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t\t\t\t/; }
+	/^\t\t\t\t\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t\t\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t\t\t/; }
+	/^\t\t\t\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t\t/; }
+	/^\t\t\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t\t[^\t]+$/{ h; s/$/\t\t\t\t\t/; }
+	/^\t\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t\t[^\t]+$/{ h; s/$/\t\t\t\t/; }
+	/^\t\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^\t[^\t]+$/{ h; s/$/\t\t\t/; }
+	/^\t\t/{ x; p; x; }' \
+| sed -E -e '
+	/^\t[^\t]+$/{ N; s/\n//; }' \
+\
+| sed -E -e '
+	/^[^\t]+$/{ h; s/$/\t\t/; }
+	/^\t/{ x; p; x; }' \
+| sed -E -e '
+	/^[^\t]+$/{ N; s/\n//; }'
