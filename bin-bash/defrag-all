@@ -22,7 +22,7 @@ then
 		if   [[ "`lsblk -n -o rota ${storage} | tr -d '[:space:]'`" == '1' ]]
 		then
 			echo -n "Defragmenting ${storage}"
-			for (( i=1 ; i <= 3 ; i+=1 ))
+			for (( i=0 ; i < 3 ; i+=1 ))
 			do
 				echo -n " ... $i"
 				e4defrag "${storage}" > /dev/null
