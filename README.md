@@ -4,7 +4,7 @@ A collection of scripts and tools.  They are either wrappers, too small for an i
 
 ## Usage
 
-These scripts and tools assume that the `which` command is always available!  The availability of other commands it tested with it.
+These scripts and tools assume that the `which` command is always available!  The availability of other commands it tested with it.  Simple script which use `sed` will generate normal "not found" errors.
 
 ## Goals
 
