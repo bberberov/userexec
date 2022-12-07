@@ -20,8 +20,14 @@ fi
 
 if   [[ -d "${HOME}/.cache/kio_http" ]] && which find > /dev/null 2>&1
 then
-	echo 'Clearing KDE web cache older than 30 days ...'
+	echo 'Clearing KDE: web cache older than 30 days ...'
 	find "${HOME}/.cache/kio_http" -name '*[0-9]*' -mtime +30 -delete
+fi
+
+if   [[ -f "${HOME}/.local/share/akonadi/db_data/mysql.err.old" ]]
+then
+	echo 'Clearing KDE: Akonadi MySQL old error log'
+	rm "${HOME}/.local/share/akonadi/db_data/mysql.err.old"
 fi
 
 if   [[ -d "${HOME}/rpmbuild" ]]
