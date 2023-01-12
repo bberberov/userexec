@@ -6,6 +6,60 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
+function usage() {
+echo '
+Prints all packages
+Options:
+    -d: show only disbled packages.
+    -e: show only enabled packages.
+    -s: show only system packages.
+    -3: show only third party packages.
+    -u: also show uninstalled packages.
+    -f: see their associated file.
+
+    --all: same as "-u -f"
+'
+}
+
+opts=''
+for opt in "$@"
+do
+	case "${opt}" in
+		-d)
+			opts+=" -d"
+		;;
+		-e)
+			opts+=" -e"
+		;;
+		-s)
+			opts+=" -s"
+		;;
+		-3)
+			opts+=" -3"
+		;;
+		-u)
+			opts+=" -u"
+		;;
+		-f)
+			opts+=" -f"
+		;;
+		--all)
+			opts=" -u -f"
+			break;
+		;;
+		--help|-?)
+			usage
+			exit 0
+		;;
+		*)
+			echo "ERROR: Unknown option: ${opt}" > /dev/stderr
+			echo > /dev/stderr
+			echo "Use --help to see the available options" > /dev/stderr
+			exit 1
+		;;
+	esac
+done
+
 if   [[ "`adb get-state`" != 'device' ]]
 then
 	echo "ERROR: Default Android device is not available" > /dev/stderr
@@ -21,7 +75,7 @@ else
 	command='cmd package'
 fi
 
-adb shell "${command} list packages -f -u" \
+adb shell "${command} list packages ${opts}" \
 | sed -E -e 's/\r//g; s/^package://; s/(.+)=([^=]+)$/\2\t=\t\1/' \
 | sort \
 | sed -e 's/\t=\t/\n\t/'

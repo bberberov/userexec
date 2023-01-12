@@ -7,6 +7,35 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
+function usage() {
+echo '
+Get information about the device
+Options:
+    --no-pii: Do not include Personally Identifiable Information
+              See https://en.wikipedia.org/wiki/Personal_data
+'
+}
+
+pii='true'
+for opt in "$@"
+do
+	case "${opt}" in
+		--no-pii)
+			pii='false'
+		;;
+		--help|-?)
+			usage
+			exit 0
+		;;
+		*)
+			echo "ERROR: Unknown option: ${opt}" > /dev/stderr
+			echo > /dev/stderr
+			echo "Use --help to see the available options" > /dev/stderr
+			exit 1
+		;;
+	esac
+done
+
 if   [[ "`adb get-state`" != 'device' ]]
 then
 	echo "ERROR: Default Android device is not available"
@@ -25,8 +54,11 @@ do
    props[${key}]="${value}"
 done
 
-echo "S/N: ${props['ro.serialno']}"
-echo
+if   [[ "${pii}" == 'true' ]]
+then
+	echo "S/N: ${props['ro.serialno']}"
+	echo
+fi
 echo "Brand : ${props['ro.product.brand']}"
 echo "Name  : ${props['ro.product.name']}"
 echo
@@ -49,9 +81,12 @@ echo "Android SDK     : ${props['ro.build.version.sdk']}"
 echo "Build Date      : `date --iso-8601 --date=@${props['ro.build.date.utc']}`"
 echo "Security Patch  : ${props['ro.build.version.security_patch']}"
 echo
-echo "Network Hostname : ${props['net.hostname']}"
-echo "Bluetooth Name   : ${props['net.bt.name']}"
-echo
+if   [[ ${pii} == 'true' ]]
+then
+	echo "Network Hostname : ${props['net.hostname']}"
+	echo "Bluetooth Name   : ${props['net.bt.name']}"
+	echo
+fi
 case "${props['gsm.current.phone-type']}" in
 	1)
 echo 'Network Type     : GSM'
