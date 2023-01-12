@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Copyright © 2022 Boian Berberov
+# Copyright © 2022, 2023 Boian Berberov
 # Licensed under the EUPL-1.2 only.
 #
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -35,7 +35,14 @@ function pkgPath() {
 }
 
 function pkgEnabled() {
-	adb shell "dumpsys package $1" | grep 'User 0:' | grep 'enabled=0' > /dev/null
+	# https://developer.android.com/reference/android/content/pm/PackageManager
+	# COMPONENT_ENABLED_STATE_DEFAULT             - 0
+	# COMPONENT_ENABLED_STATE_ENABLED             - 1
+	# COMPONENT_ENABLED_STATE_DISABLED            - 2
+	# COMPONENT_ENABLED_STATE_DISABLED_USER       - 3
+	# COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED - 4
+
+	adb shell "dumpsys package $1" | grep 'User 0:' | grep 'enabled=[01]' > /dev/null
 }
 
 function pkgDisableNormal() {
