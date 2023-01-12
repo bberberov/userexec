@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Copyright © 2022 Boian Berberov
+# Copyright © 2022, 2023 Boian Berberov
 # Licensed under the EUPL-1.2 only.
 #
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -40,8 +40,14 @@ function pkgRevokeNormal() {
 }
 
 function pkgRevokeForced() {
-	echo "For $1, revoking $2 forcefully ... "
-	adb shell "pm revoke --user 0 $1 $2"
+	if   (( "${sdk}" < 23 ))
+	then
+		echo "For $1, revoking $2 (Android before 6.0 cannot \"force\") ... "
+		adb shell "pm revoke $1 $2"
+	else
+		echo "For $1, revoking $2 forcefully ... "
+		adb shell "pm revoke --user 0 $1 $2"
+	fi
 }
 
 if   pkgExists "$1"
