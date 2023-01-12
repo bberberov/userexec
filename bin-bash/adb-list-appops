@@ -1,0 +1,29 @@
+#! /bin/bash
+
+# Copyright © 2022 Boian Berberov
+# Licensed under the EUPL-1.2 only.
+#
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ "`adb get-state`" != 'device' ]]
+then
+	echo "ERROR: Default Android device is not available" > /dev/stderr
+	exit 1
+fi
+
+sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
+
+if   (( "${sdk}" < 23 ))
+then
+	echo "ERROR: Modern AppOps is not available before Android 6.0" > /dev/stderr
+	exit 1
+fi
+
+echo 'AppOps:'
+adb shell "dumpsys appops" \
+| tr -d '\r' \
+| grep ': mode=' \
+| sed -e 's/^[[:space:]]\+/\t- /; s/:.*//' \
+| sort \
+| uniq
