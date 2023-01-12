@@ -34,7 +34,7 @@ adb shell "dumpsys package $1" \
 | filter-indent-2sp-to-tab \
 \
 | filter-presort-indented \
-| grep -E -e '^(Packages|Hidden system packages):' \
+| grep -E -e '^(Packages|Hidden system packages|Shared users):' \
 | filter-postsort-indented \
 \
 | sed -E -e '
@@ -147,3 +147,10 @@ s/installPermissionsFixed=/permissions-fixed=/
 	/^[[:space:]]+[^[:space:]=]+[[:space:]]*=/s/=/ = /
 	/^[[:space:]]+Package/i\\
 '
+
+if   (( 23 <= "${sdk}" ))
+then
+	echo 'AppOps:'
+	adb shell "appops get $1" \
+	| sed -e 's/\r//g; s/^/\t/'
+fi
