@@ -16,13 +16,71 @@ sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
 
 if   (( "${sdk}" < 23 ))
 then
-	echo "INFO: Cannot list settings on Android 5.1 and older devices"
-	exit 0
-fi
+	echo 'INFO: Cannot list settings on Android 5.1 and older devices'
+	echo 'INFO: Showing some known settings'
 
-echo "System:"
-adb shell "settings list system" | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
-echo "Secure:"
-adb shell "settings list secure" | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
-echo "Global:"
-adb shell "settings list global" | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
+	echo "System:"
+		# Unavailable
+		# 'alarm_set'
+		# 'notification_set'
+		# 'ringtone_set'
+	for i in \
+		'alarm_alert' \
+		'haptic_feedback_enabled' \
+		'lockscreen_sounds_enabled' \
+		'notification_light_pulse' \
+		'notification_sound' \
+		'pointer_speed' \
+		'ringtone' \
+		'screen_brightness' \
+		'screen_brightness_mode' \
+		'vibrate_when_ringing' \
+		'volume_alarm' \
+		'volume_bluetooth_sco' \
+		'volume_music' \
+		'volume_notification' \
+		'volume_ring' \
+		'volume_system' \
+		'volume_voice' \
+
+	do
+		echo $'\t'"${i}: `adb shell settings get system ${i}`"
+	done
+
+	echo "Secure:"
+	for i in \
+		'android_id' \
+		'bluetooth_address' \
+		'bluetooth_name' \
+		'default_input_method' \
+		'enabled_input_methods' \
+		'mock_location' \
+		'sms_default_application' \
+
+	do
+		echo $'\t'"${i}: `adb shell settings get secure ${i}`"
+	done
+	echo "Global:"
+		# Unavailable
+		# 'webview_provider'
+	for i in \
+		'adb_enabled' \
+		'airplane_mode_on' \
+		'assisted_gps_enabled' \
+		'bluetooth_on' \
+		'device_name' \
+		'install_non_market_apps' \
+		'usb_mass_storage_enabled' \
+		'wifi_on' \
+
+	do
+		echo $'\t'"${i}: `adb shell settings get global ${i}`"
+	done
+else
+	echo "System:"
+	adb shell "settings list system" | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
+	echo "Secure:"
+	adb shell "settings list secure" | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
+	echo "Global:"
+	adb shell "settings list global" | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
+fi
