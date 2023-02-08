@@ -9,16 +9,16 @@
 # Works up to a depth of 12 indentations
 
 sed -e '
-	s/^            /\t\t\t\t\t\t\t\t\t\t\t\t/;
-	s/^           /\t\t\t\t\t\t\t\t\t\t\t/;
-	s/^          /\t\t\t\t\t\t\t\t\t\t/;
-	s/^         /\t\t\t\t\t\t\t\t\t/;
-	s/^        /\t\t\t\t\t\t\t\t/;
-	s/^       /\t\t\t\t\t\t\t/;
-	s/^      /\t\t\t\t\t\t/;
-	s/^     /\t\t\t\t\t/;
-	s/^    /\t\t\t\t/;
-	s/^   /\t\t\t/;
-	s/^  /\t\t/;
-	s/^ /\t/;
+	s/^            /\t\t\t\t\t\t\t\t\t\t\t\t/
+	s/^           /\t\t\t\t\t\t\t\t\t\t\t/
+	s/^          /\t\t\t\t\t\t\t\t\t\t/
+	s/^         /\t\t\t\t\t\t\t\t\t/
+	s/^        /\t\t\t\t\t\t\t\t/
+	s/^       /\t\t\t\t\t\t\t/
+	s/^      /\t\t\t\t\t\t/
+	s/^     /\t\t\t\t\t/
+	s/^    /\t\t\t\t/
+	s/^   /\t\t\t/
+	s/^  /\t\t/
+	s/^ /\t/
 ' < /dev/stdin
