@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Copyright © 2021, 2022 Boian Berberov
+# Copyright © 2021, 2022, 2023 Boian Berberov
 # Licensed under the EUPL-1.2 only.
 #
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -10,6 +10,7 @@ if   [[ -v TMPDIR && -d "${TMPDIR}" ]]
 then
 	workdir="${TMPDIR}"
 elif [[ "`uname -s`" == 'Linux' && -d '/tmp' ]]
+then
 	workdir='/tmp'
 fi
 
@@ -26,7 +27,7 @@ fi
 
 if   [[ -v workdir && -v prefix ]]
 then
-	treedir="/${workdir}/${prefix}-git-clone"
+	treedir="${workdir}/${prefix}-git-clone"
 else
 	echo "ERROR: Unable to find a temporary directory for the initial checkout"
 	exit 1
