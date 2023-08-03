@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Copyright © 2022 Boian Berberov
+# Copyright © 2022, 2023 Boian Berberov
 # Licensed under the EUPL-1.2 only.
 #
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -68,6 +68,7 @@ then
 	elif
 		[[ "${pkg_path:0:6}" == '/apex/'
 		|| "${pkg_path:0:8}" == '/vendor/'
+		|| "${pkg_path:0:7}" == '/prism/'
 		|| "${pkg_path:0:9}" == '/product/'
 		]]
 	then
