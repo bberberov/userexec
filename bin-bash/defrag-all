@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright © 2021, 2022 Boian Berberov
+# Copyright © 2021, 2022, 2023 Boian Berberov
 # Licensed under the EUPL-1.2 only.
 #
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -22,7 +22,7 @@ then
 		if   [[ "`lsblk -n -o rota ${storage} | tr -d '[:space:]'`" == '1' ]]
 		then
 			echo -n "Defragmenting ${storage}"
-			for (( i=0 ; i < 3 ; i+=1 ))
+			for (( i=1 ; i < 4 ; i+=1 ))
 			do
 				echo -n " ... $i"
 				e4defrag "${storage}" > /dev/null
