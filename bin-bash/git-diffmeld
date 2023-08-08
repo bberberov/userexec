@@ -1,0 +1,64 @@
+#! /bin/bash
+
+# Copyright © 2023 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+maxtabs=10
+
+function usage() {
+echo "
+Helper for Meld (https://meldmerge.org/)
+
+Displays multiple diffs in tabs, up to a reasonable number (${maxtabs})
+
+Options:
+    --cached|--staged: View staged changes.  Same behavior as git diff --cached
+"
+}
+
+treeroot="`git rev-parse --show-toplevel`"
+
+if   (( 0 == $? ))
+then
+	cached=''
+	for opt in "$@"
+	do
+		case "${opt}" in
+			--cached|--staged)
+				cached='--cached'
+			;;
+			-?)
+				usage
+				exit 0
+			;;
+			*)
+				echo "ERROR: Unknown option: ${opt}" > /dev/stderr
+				echo > /dev/stderr
+				echo "Use -? to see the available options" > /dev/stderr
+				exit 1
+			;;
+		esac
+	done
+
+	difffiles="`git diff --name-only ${cached}`"
+	diffcount=`echo -n "${difffiles}" | grep -c '^'`
+	if   (( 0 < ${diffcount} ))
+	then
+		if   (( ${diffcount} <= ${maxtabs} ))
+		then
+			diffmeld='meld'
+			for difffile in ${difffiles}
+			do
+				diffmeld+=" --diff ${treeroot}/${difffile}"
+			done
+			${diffmeld}
+		else
+			meld "${treeroot}"
+		fi
+	else
+		echo 'There is nothing to Meld'
+	fi
+fi
