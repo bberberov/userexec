@@ -35,7 +35,7 @@ fi
 
 case $# in
 	1)
-		gitdir=`basename "$1"`
+		gitdir=`basename "${1##*[@/]gist.github.com[:/]}"`
 		git clone --no-checkout --separate-git-dir="${gitdir}" "$1" "${treedir}/${gitdir}" \
 		&& sed -i -e 's/bare = false/bare = true/' "${gitdir}/config" \
 		&& rm -rf "${treedir}/${gitdir}"
