@@ -1,0 +1,25 @@
+#! /bin/bash
+
+# Copyright © 2023, 2024 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+pushd . > /dev/null
+echo 'Looking for repos with remotes ...'
+for with_remotes in $(find "$1" -type d -path '*.git/refs/remotes')
+do
+	cd "${with_remotes}"
+	if [ -n "$(git remote show)" ]
+	then
+		echo -ne '\e[1;31m'
+		echo "${with_remotes%refs/remotes}"
+		echo -ne '\e[1;30m'
+		git remote -v show | grep '(fetch)'
+		echo -ne '\e[0m'
+ 		git fetch --all --dry-run
+#		git fetch --all
+	fi
+done
+popd > /dev/null
