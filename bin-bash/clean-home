@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Copyright © 2021, 2022 Boian Berberov
+# Copyright © 2021, 2022, 2023 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -43,3 +43,32 @@ then
 	done
 	echo
 fi
+
+echo 'Removing directories ...'
+for dir in \
+	"${HOME}/.local/share/virtualenv/wheel" \
+	"${HOME}/.cache/appstream" \
+	"${HOME}/.cache/flatpak" \
+	"${HOME}/.cache/minetest" \
+	"${HOME}/.cache/pre-commit" \
+	"${HOME}/.cache/rust2rpm" \
+;
+do
+	if   [[ -d "${dir}" ]]
+	then
+		echo "  ${dir} ..."
+		rm -rf "${dir}"
+	fi
+done
+
+echo 'Removing sub-directories ...'
+for dir in \
+	"${HOME}/.cache/thumbnails" \
+;
+do
+	if   [[ -d "${dir}" ]]
+	then
+		echo "  ${dir}/* ..."
+		rm -rf "${dir}"/*
+	fi
+done
