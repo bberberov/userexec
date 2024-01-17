@@ -1,0 +1,4 @@
+kate-wildcard(bin-sh/*): syntax Bash;
+kate-wildcard(bin-bash/*): syntax Bash;
+kate-wildcard(bin-bash3/*): syntax Bash;
+kate-wildcard(bin-bash4/*): syntax Bash;
