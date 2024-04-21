@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# Copyright © 2021, 2022 Boian Berberov
+# Copyright © 2021, 2022, 2024 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -10,6 +10,7 @@ if   [[ -v TMPDIR && -d "${TMPDIR}" ]]
 then
 	workdir="${TMPDIR}"
 elif [[ "`uname -s`" == 'Linux' && -d '/tmp' ]]
+then
 	workdir='/tmp'
 fi
 
