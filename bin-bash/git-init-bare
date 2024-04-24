@@ -6,6 +6,8 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
+timestamp="`date +%F-%H-%M-%S`"
+
 if   [[ -v TMPDIR && -d "${TMPDIR}" ]]
 then
 	workdir="${TMPDIR}"
@@ -27,22 +29,36 @@ fi
 
 if   [[ -v workdir && -v prefix ]]
 then
-	treedir="/${workdir}/${prefix}-git-init"
+	treedir="/${workdir}/${prefix}-git-init-${timestamp}"
 else
 	echo "ERROR: Unable to find a temporary directory for the initial checkout"
 	exit 1
 fi
 
-if   (( $# == 1 ))
-then
-	git init --separate-git-dir="$1" "${treedir}" \
-	&& touch "${treedir}/.gitignore" \
-	&& git --git-dir="$1" --work-tree="${treedir}" add . \
-	&& git --git-dir="$1" --work-tree="${treedir}" commit -m 'Initial Commit' > /dev/null \
-	&& rm -rf "${treedir}" \
-	&& sed -i -e 's/bare = false/bare = true/' "$1/config" \
-	&& rm -f "$1/COMMIT_EDITMSG" \
-	&& git --git-dir="$1" --no-pager log --format=oneline
-else
-	echo 'usage: git init-bare <path>'
-fi
+case $# in
+	1)
+		git init --separate-git-dir="$1" "${treedir}" \
+		&& touch "${treedir}/.gitignore" \
+		&& git --git-dir="$1" --work-tree="${treedir}" add . \
+		&& git --git-dir="$1" --work-tree="${treedir}" commit -m 'Initial Commit' > /dev/null \
+		&& sed -i -e 's/bare = false/bare = true/' "$1/config" \
+		&& rm -rf "${treedir}" "$1/COMMIT_EDITMSG" \
+		&& git --git-dir="$1" --no-pager log --format=oneline
+	;;
+	2)
+		init_commit_src="init-commit-src-${timestamp}"
+		git clone --depth 1 --separate-git-dir="$1" "$2" "${treedir}/${gitdir}" \
+		&& git --git-dir="$1" --work-tree="${treedir}" branch -m "${init_commit_src}" \
+		&& git --git-dir="$1" --work-tree="${treedir}" checkout --orphan `git config --default main --get init.defaultBranch` \
+		&& git --git-dir="$1" --work-tree="${treedir}" commit -m 'Initial Commit' > /dev/null \
+		&& git --git-dir="$1" --work-tree="${treedir}" branch -d "${init_commit_src}" > /dev/null 2>&1 \
+		&& git --git-dir="$1" --work-tree="${treedir}" remote remove `git config --default origin --get clone.defaultRemoteName` \
+		&& git --git-dir="$1" --work-tree="${treedir}" gc --aggressive > /dev/null 2>&1 \
+		&& sed -i -e 's/bare = false/bare = true/' "$1/config" \
+		&& rm -rf "${treedir}" "$1/COMMIT_EDITMSG" "$1/shallow" "$1/refs/remotes" "$1/logs/refs/remotes" \
+		&& git --git-dir="$1" --no-pager log --format=oneline
+	;;
+	*)
+		echo 'usage: git init-bare <path> [template-repo]'
+	;;
+esac
