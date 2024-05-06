@@ -7,59 +7,50 @@
 # SPDX-License-Identifier: EUPL-1.2
 
 pushd . > /dev/null
-echo 'Looking for repos ...'
-for worktree_file in $(find "$1" -type f -name gitdir -print)
+for src_path in "$@"
 do
-	worktree="$(sed -e s:\/\.git\$:: ${worktree_file})"
-# 	repo_path=${worktree_file%gitdir}
-# 	repo_shortpath=${repo_path#"$1"}
-# 	echo ${repo_shortpath}
-	# BUG in prefix substitution?
-	echo -ne "\e[1;30m${worktree/~/\~}\e[0m: "
-	if [ -d "${worktree}" ]
-	then
-		cd "${worktree}"
-
-		ref="$(git symbolic-ref --short -q HEAD)"
-
-		echo -ne "\e[1;32m${ref}\e[0m is"
-
-		ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options ${ref}@{upstream})"
-		if [ -n ${ups_ref} ]
+	echo "Looking for repos in ${src_path} ..."
+	for worktree_file in $(find "${src_path}" -type f -name gitdir -print)
+	do
+		worktree="$(sed -e s:\/\.git\$:: ${worktree_file})"
+	# 	repo_path=${worktree_file%gitdir}
+	# 	repo_shortpath=${repo_path#"$1"}
+	# 	echo ${repo_shortpath}
+		# BUG in prefix substitution?
+		echo -ne "\e[1;30m${worktree/~/\~}\e[0m: "
+		if [ -d "${worktree}" ]
 		then
-			ahead=$(git rev-list --count ${ups_ref}..${ref})
-			behind=$(git rev-list --count ${ref}..${ups_ref})
-			if (( 0 < ${ahead} + ${behind} ))
-			then
-				if (( 0 < ${ahead} ))
-				then
-					echo -ne " \e[1;34m${ahead} ahead\e[0m"
-				fi
-				if (( 0 < ${behind} ))
-				then
-					echo -ne " \e[1;33m${behind} behind\e[0m"
-				fi
-			else
-				echo -n ' up to date'
-			fi
-		else
-			echo -n ' not tracking'
-		fi
+			cd "${worktree}"
 
-		if   git remote get-url upstream > /dev/null 2>&1
-		then
-			ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options UPSTREAM_HEAD)"
-			if [ -n "${ups_ref}" ]
+			ref="$(git symbolic-ref --short -q HEAD)"
+
+			echo -ne "\e[1;32m${ref}\e[0m is"
+
+			ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options ${ref}@{upstream})"
+			if [ -n ${ups_ref} ]
 			then
+				ahead=$(git rev-list --count ${ups_ref}..${ref})
 				behind=$(git rev-list --count ${ref}..${ups_ref})
-				if (( 0 < ${behind} ))
+				if (( 0 < ${ahead} + ${behind} ))
 				then
-					echo -ne ", \e[36m${behind} behind ${ups_ref}\e[0m"
+					if (( 0 < ${ahead} ))
+					then
+						echo -ne " \e[1;34m${ahead} ahead\e[0m"
+					fi
+					if (( 0 < ${behind} ))
+					then
+						echo -ne " \e[1;33m${behind} behind\e[0m"
+					fi
 				else
-					echo -ne ", up to ${ups_ref}"
+					echo -n ' up to date'
 				fi
 			else
-				ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options refs/UPSTREAM_HEAD)"
+				echo -n ' not tracking'
+			fi
+
+			if   git remote get-url upstream > /dev/null 2>&1
+			then
+				ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options UPSTREAM_HEAD)"
 				if [ -n "${ups_ref}" ]
 				then
 					behind=$(git rev-list --count ${ref}..${ups_ref})
@@ -70,40 +61,52 @@ do
 						echo -ne ", up to ${ups_ref}"
 					fi
 				else
-					echo -ne ", \e[1;31mno UPSTREAM_HEAD\e[0m"
+					ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options refs/UPSTREAM_HEAD)"
+					if [ -n "${ups_ref}" ]
+					then
+						behind=$(git rev-list --count ${ref}..${ups_ref})
+						if (( 0 < ${behind} ))
+						then
+							echo -ne ", \e[36m${behind} behind ${ups_ref}\e[0m"
+						else
+							echo -ne ", up to ${ups_ref}"
+						fi
+					else
+						echo -ne ", \e[1;31mno UPSTREAM_HEAD\e[0m"
+					fi
 				fi
 			fi
-		fi
 
-		status="$(git status --untracked-files=all --porcelain)"
-		status_index="$(grep -G -c   '^[^ ][ ]'    <<< ${status})"
-		 status_tree="$(grep -G -c    '^[ ][^ ]'   <<< ${status})"
-		 status_both="$(grep -G -c '^[^ ?!][^ ?!]' <<< ${status})"
-		 status_untr="$(grep -G -c      '^??'      <<< ${status})"
-		if (( 0 < ${status_both} + ${status_index} + ${status_tree} + ${status_untr} ))
-		then
-			echo -n '; tree has'
-			if (( 0 < ${status_both} ))
+			status="$(git status --untracked-files=all --porcelain)"
+			status_index="$(grep -G -c   '^[^ ][ ]'    <<< ${status})"
+			status_tree="$(grep -G -c    '^[ ][^ ]'   <<< ${status})"
+			status_both="$(grep -G -c '^[^ ?!][^ ?!]' <<< ${status})"
+			status_untr="$(grep -G -c      '^??'      <<< ${status})"
+			if (( 0 < ${status_both} + ${status_index} + ${status_tree} + ${status_untr} ))
 			then
-				echo -ne " \e[36m${status_both} stage+mod\e[0m"
+				echo -n '; tree has'
+				if (( 0 < ${status_both} ))
+				then
+					echo -ne " \e[36m${status_both} stage+mod\e[0m"
+				fi
+				if (( 0 < ${status_index} ))
+				then
+					echo -ne " \e[32m${status_index} staged\e[0m"
+				fi
+				if (( 0 < ${status_tree} ))
+				then
+					echo -ne " \e[33m${status_tree} modified\e[0m"
+				fi
+				if (( 0 < ${status_untr} ))
+				then
+					echo -ne " \e[31m${status_untr} untracked\e[0m"
+				fi
+				echo -n ' files'
 			fi
-			if (( 0 < ${status_index} ))
-			then
-				echo -ne " \e[32m${status_index} staged\e[0m"
-			fi
-			if (( 0 < ${status_tree} ))
-			then
-				echo -ne " \e[33m${status_tree} modified\e[0m"
-			fi
-			if (( 0 < ${status_untr} ))
-			then
-				echo -ne " \e[31m${status_untr} untracked\e[0m"
-			fi
-			echo -n ' files'
+			echo
+		else
+			echo 'ERROR: Worktree does not exist!'
 		fi
-		echo
-	else
-		echo 'ERROR: Worktree does not exist!'
-	fi
+	done
 done
 popd > /dev/null

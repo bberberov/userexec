@@ -7,19 +7,22 @@
 # SPDX-License-Identifier: EUPL-1.2
 
 pushd . > /dev/null
-echo 'Looking for repos with remotes ...'
-for with_remotes in $(find "$1" -type d -path '*.git/refs/remotes')
+for src_path in "$@"
 do
-	cd "${with_remotes}"
-	if [ -n "$(git remote show)" ]
-	then
-		echo -ne '\e[1;31m'
-		echo "${with_remotes%refs/remotes}"
-		echo -ne '\e[1;30m'
-		git remote -v show | grep '(fetch)'
-		echo -ne '\e[0m'
- 		git fetch --all --dry-run
-#		git fetch --all
-	fi
+	echo "Looking for repos with remotes in ${src_path} ..."
+	for with_remotes in $(find "$1" -type d -path '*.git/refs/remotes')
+	do
+		cd "${with_remotes}"
+		if [ -n "$(git remote show)" ]
+		then
+			echo -ne '\e[1;31m'
+			echo "${with_remotes%refs/remotes}"
+			echo -ne '\e[1;30m'
+			git remote -v show | grep '(fetch)'
+			echo -ne '\e[0m'
+			git fetch --all --dry-run
+	#		git fetch --all
+		fi
+	done
 done
 popd > /dev/null
