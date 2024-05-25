@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 # bash 4.0 minimum - readarray
 
 # Copyright © 2022 Boian Berberov
