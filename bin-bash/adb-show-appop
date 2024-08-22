@@ -1,10 +1,18 @@
 #! /usr/bin/env bash
 
-# Copyright © 2022 Boian Berberov
+# Copyright © 2022, 2024 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
+
+function usage() {
+echo '
+Show all states of AppOp across apps
+
+adb-show-appop <appop>
+'
+}
 
 if   [[ "`adb get-state`" != 'device' ]]
 then
@@ -20,26 +28,43 @@ then
 	exit 1
 fi
 
-echo 'Allow:'
-adb shell "appops query-op $1 allow" \
-| tr -d '\r' \
-| sort \
-| sed -e 's/^/\t- /'
+if   (( 1 == $# ))
+then
+	echo 'Allow:'
+	adb shell "appops query-op $1 allow" \
+	| tr -d '\r' \
+	| sort \
+	| sed -e 's/^/\t- /'
 
-echo 'Ignore:'
-adb shell "appops query-op $1 ignore" \
-| tr -d '\r' \
-| sort \
-| sed -e 's/^/\t- /'
+	if   (( 21 <= "${sdk}" ))
+	then
+	echo 'Default:'
+	adb shell "appops query-op $1 default" \
+	| tr -d '\r' \
+	| sort \
+	| sed -e 's/^/\t- /'
+	fi
 
-echo 'Deny:'
-adb shell "appops query-op $1 deny" \
-| tr -d '\r' \
-| sort \
-| sed -e 's/^/\t- /'
+	echo 'Ignore:'
+	adb shell "appops query-op $1 ignore" \
+	| tr -d '\r' \
+	| sort \
+	| sed -e 's/^/\t- /'
 
-echo 'Default:'
-adb shell "appops query-op $1 default" \
-| tr -d '\r' \
-| sort \
-| sed -e 's/^/\t- /'
+	echo 'Deny:'
+	adb shell "appops query-op $1 deny" \
+	| tr -d '\r' \
+	| sort \
+	| sed -e 's/^/\t- /'
+
+	if   (( 29 <= "${sdk}" ))
+	then
+	echo 'Foreground:'
+	adb shell "appops query-op $1 foreground" \
+	| tr -d '\r' \
+	| sort \
+	| sed -e 's/^/\t- /'
+	fi
+else
+	usage
+fi
