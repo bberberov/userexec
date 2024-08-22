@@ -76,6 +76,10 @@ else
 fi
 
 adb shell "${command} list packages ${opts}" \
-| sed -E -e 's/\r//g; s/^package://; s/(.+)=([^=]+)$/\2\t=\t\1/' \
+| sed -E -e '
+	s/\r//g
+	s/^package://
+	s/(.+)=([^=]+)$/\2\t=\t\1/
+' \
 | sort \
 | sed -e 's/\t=\t/\n\t/'

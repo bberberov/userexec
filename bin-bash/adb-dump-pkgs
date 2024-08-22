@@ -55,7 +55,10 @@ adb shell 'dumpsys package packages' \
 		s/[[:space:]]+installStatus=/\n\t\tinstallStatus=/
 	}
 	/^\t\tinstallPermissionsFixed=/s/[[:space:]]+installStatus=/\n\t\tinstallStatus=/
-	/^\t\tversionCode=/{ s/versionCode=[0-9]+[[:space:]]+//; s/(minSdk=[0-9]+)[[:space:]]+/\1\n\t\t/; }
+	/^\t\tversionCode=/{
+		s/versionCode=[0-9]+[[:space:]]+//
+		s/(minSdk=[0-9]+)[[:space:]]+/\1\n\t\t/
+	}
 
 	s/lastDisabledCaller: /lastDisabledCaller=/
 ' \

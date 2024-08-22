@@ -31,14 +31,52 @@ echo
 adb shell "${command} list permissions -g -f" \
 | tail -n +3 \
 | tr -d '\r' \
-| sed -e '/+ group:/h; /+ ungrouped:/{ h; s/$/\t\t/; }; /\+ permission:/{ x; p; x; }; /^$/d' \
-| sed -E -e '/\+ (group|ungrouped|permission):/{ :begin; N; s/\n([[:space:]]+[[:alnum:]]+:)/\t\1/; s/\n([[:alnum:]])/  \1/; tbegin; P; D; }' \
-| sed -E -e '/\+ (group:[[:graph:]]+|ungrouped:)$/{N; s/\n[[:space:]]+\+/\t+/}' \
+| sed -e '
+	/+ group:/h
+	/+ ungrouped:/{
+		h
+		s/$/\t\t/
+	}
+	/\+ permission:/{ x; p; x; }
+	/^$/d
+' \
+| sed -E -e '
+	/\+ (group|ungrouped|permission):/{
+		:begin
+		N
+		s/\n([[:space:]]+[[:alnum:]]+:)/\t\1/
+		s/\n([[:alnum:]])/  \1/
+		tbegin
+		P
+		D
+	}
+' \
+| sed -E -e '
+	/\+ (group:[[:graph:]]+|ungrouped:)$/{
+		N
+		s/\n[[:space:]]+\+/\t+/
+	}
+' \
 | sort \
 | sed -e 's/.\+\t+ permission:/\t+ permission:/' \
-| sed -e '/+ group/{ s/\t\s\+/\n\t/g; s/$/\n\tpermissions:/; }; /+ permission:/{s/\t\s\+/\n\t\t/g}; /+ ungrouped:/s/\t\t//' \
-| sed -E -e '/\t(description|label):null/s/null//; /\t?[+]/s/(group|permission):/name:/; /^(\t|[+])/s/([[:space:]][^:]+):/\1: /' \
-| sed -E -e '/\tprotectionLevel: /{s/: /:- /; s/[|]/- /g}' \
-| sed -E -e '/\tprotectionLevel:/{s/[-]/\n\t\t-/g}' \
+| sed -e '
+	/+ group/{
+		s/\t\s\+/\n\t/g
+		s/$/\n\tpermissions:/
+	}
+	/+ permission:/s/\t\s\+/\n\t\t/g
+	/+ ungrouped:/s/\t\t//
+' \
+| sed -E -e '
+	/\t(description|label):null/s/null//
+	/\t?[+]/s/(group|permission):/name:/
+	/^(\t|[+])/s/([[:space:]][^:]+):/\1: /
+' \
+| sed -E -e '
+	/\tprotectionLevel: /{
+		s/: /:- /
+		s/[|]/- /g
+	' \
+| sed -E -e '/\tprotectionLevel:/s/[-]/\n\t\t-/g' \
 | sed -e 's/+ /- /' \
 | filter-indent-tab-to-2sp
