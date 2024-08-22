@@ -8,7 +8,7 @@
 
 if   [[ "`adb get-state`" != 'device' ]]
 then
-	echo "ERROR: Default Android device is not available" > /dev/stderr
+	echo 'ERROR: Default Android device is not available' > /dev/stderr
 	exit 1
 fi
 
