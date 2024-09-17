@@ -1,0 +1,82 @@
+#! /bin/sh
+
+# Copyright © 2024 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ -f './mke2fs.conf' ]]
+then
+	configfile='./mke2fs.conf'
+elif [[ -v XDG_CONFIG_HOME && -f "${XDG_CONFIG_HOME}/mke2fs.conf" ]]
+then
+	configfile="${XDG_CONFIG_HOME}/mke2fs.conf"
+elif [[ -v HOME ]]
+then
+	if   [[ -f "${HOME}/.config/mke2fs.conf" ]]
+	then
+		configfile="${HOME}/.config/mke2fs.conf"
+	elif [[ -f "${HOME}/mke2fs.conf" ]]
+	then
+		configfile="${HOME}/mke2fs.conf"
+	fi
+elif [[ -f '/root/.config/mke2fs.conf' ]]
+then
+	configfile='/root/.config/mke2fs.conf'
+elif [[ -f '/root/mke2fs.conf' ]]
+then
+	configfile='/root/mke2fs.conf'
+else
+	configfile=''
+fi
+
+if   [[ -n "${configfile}" ]]
+then
+	echo "Using configuration : ${configfile}"
+
+	blockdevice=''
+	auto='false'
+	for opt in "$@"
+	do
+		case "${opt}" in
+			--auto)
+				auto='true'
+			;;
+			--no-auto)
+				auto='false'
+			;;
+			*)
+				if [[ "${opt:0:1}" != '-' && -b "${opt}" ]]
+				then
+					blockdevice="${opt}"
+				fi
+		esac
+	done
+
+	if   [[ "${auto}" == 'true' && -n "${blockdevice}" ]]
+	then
+		partlabel="$(blkid -s LABEL -o value ${blockdevice})"
+
+		for fhs in root boot home opt srv usr var varlib vartmp
+		do
+			if   [[ "${partlabel}" == "${fhs}" ]]
+			then
+				if   grep -E "${partlabel}[[:space:]]+=" "${configfile}" > /dev/null 2>&1
+				then
+					echo "Using usage type    : ${fhs}"
+					MKE2FS_CONFIG="${configfile}" "$(basename ${0%-config})" -T "${partlabel}" -L "${partlabel}" $@
+					exit $?
+				else
+					break
+				fi
+			fi
+		done
+	fi
+
+	MKE2FS_CONFIG="${configfile}" "$(basename ${0%-config})" $@
+	exit $?
+else
+	"$(basename ${0%-config})" $@
+	exit $?
+fi
