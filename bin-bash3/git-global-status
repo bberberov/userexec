@@ -21,10 +21,11 @@ Options:
 }
 
 declare -a dirs
-opt_disppath='repo' # origin, path, repo, worktree
+opt_disppath='repo' # origin, path, git-dir, repo, worktree
 opt_ab='true'
 opt_status='false'
 opt_upstream='false'
+opt_untracked='true'
 for opt in "$@"
 do
 	case "${opt}" in
@@ -33,6 +34,9 @@ do
 		;;
 		--path)
 			opt_disppath='path'
+		;;
+		--git-dir)
+			opt_disppath='git-dir'
 		;;
 		--repo)
 			opt_disppath='repo'
@@ -48,6 +52,9 @@ do
 		;;
 		--upstream)
 			opt_upstream='true'
+		;;
+		--no-untracked)
+			opt_untracked='false'
 		;;
 		--help|-?)
 			usage
@@ -91,8 +98,13 @@ do
 				repo_path=${worktree_file%gitdir}
 				disppath=${repo_path}
 			;;
-			repo)
+			git-dir)
 				repo_path=${worktree_file%gitdir}
+				repo_shortpath=${repo_path#"${src_path}"}
+				disppath=${repo_shortpath}
+			;;
+			repo)
+				repo_path=$(git -C "${worktree_file%gitdir}" rev-parse --git-common-dir)
 				repo_shortpath=${repo_path#"${src_path}"}
 				disppath=${repo_shortpath}
 			;;
@@ -174,7 +186,12 @@ do
 
 			if   [[ 'true' == "${opt_status}" ]]
 			then
-				status="$(git status --untracked-files=all --porcelain)"
+				if [[ 'true' == "${opt_untracked}" ]]
+				then
+					status="$(git status --untracked-files=all --porcelain)"
+				else
+					status="$(git status --untracked-files=no --porcelain)"
+				fi
 				status_index="$(grep -G -c   '^[^ ][ ]'    <<< ${status})"
 				status_tree="$(grep -G -c    '^[ ][^ ]'   <<< ${status})"
 				status_both="$(grep -G -c '^[^ ?!][^ ?!]' <<< ${status})"
