@@ -64,6 +64,7 @@ done
 echo 'Removing sub-directories ...'
 for dir in \
 	"${HOME}/.cache/thumbnails" \
+	"${HOME}/.cargo/registry/cache" \
 ;
 do
 	if   [[ -d "${dir}" ]]
