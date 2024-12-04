@@ -31,7 +31,7 @@ if   [[ -v workdir && -v prefix ]]
 then
 	treedir="/${workdir}/${prefix}-git-init-${timestamp}"
 else
-	echo "ERROR: Unable to find a temporary directory for the initial checkout"
+	echo 'ERROR: Unable to find a temporary directory for the initial checkout'
 	exit 1
 fi
 
@@ -47,6 +47,7 @@ case $# in
 	;;
 	2)
 		init_commit_src="init-commit-src-${timestamp}"
+		gitdir=`basename "$2"`
 		git clone --depth 1 --separate-git-dir="$1" "$2" "${treedir}/${gitdir}" \
 		&& git --git-dir="$1" --work-tree="${treedir}" branch -m "${init_commit_src}" \
 		&& git --git-dir="$1" --work-tree="${treedir}" checkout --orphan `git config --default main --get init.defaultBranch` \
