@@ -65,9 +65,11 @@ do
 			then
 				dirs+=("${opt}")
 			else
-				echo "ERROR: Unknown option or invalid path: ${opt}" > /dev/stderr
-				echo > /dev/stderr
-				echo "Use --help to see the available options" > /dev/stderr
+				echo -e "\
+\e[1;31mERROR: Unknown option or invalid path: ${opt}\e[0m
+
+Use --help to see the available options"\
+					> /dev/stderr
 				exit 1
 			fi
 		;;
@@ -127,7 +129,7 @@ do
 
 			if   [[ 'true' == "${opt_ab}" ]]
 			then
-				echo -ne " is"
+				echo -ne ' is'
 
 				ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options ${ref}@{upstream})"
 				if [ -n ${ups_ref} ]
@@ -178,7 +180,7 @@ do
 								echo -ne ", up to ${ups_ref}"
 							fi
 						else
-							echo -ne ", \e[1;31mno UPSTREAM_HEAD\e[0m"
+							echo -ne ', \e[1;31mno UPSTREAM_HEAD\e[0m'
 						fi
 					fi
 				fi
@@ -222,7 +224,7 @@ do
 		echo
 
 		else
-			echo -e '\e[1;31mERROR: Worktree does not exist!\e[0m'
+			echo -e '\e[1;31mERROR: Worktree does not exist!\e[0m' > /dev/stderr
 		fi
 	done
 done

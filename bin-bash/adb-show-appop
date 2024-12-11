@@ -16,7 +16,7 @@ adb-show-appop <appop>
 
 if   [[ "`adb get-state`" != 'device' ]]
 then
-	echo 'ERROR: Default Android device is not available' > /dev/stderr
+	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1
 fi
 
@@ -24,7 +24,11 @@ sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
 
 if   (( "${sdk}" < 24 ))
 then
-	echo "ERROR: This operation is not available before Android 7.0.  Try adb-dump-appops." > /dev/stderr
+	echo -e '\
+\e[1;31mERROR: This operation is not available before Android 7.0.\e[0m
+
+Try adb-dump-appops.'\
+		> /dev/stderr
 	exit 1
 fi
 

@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2022 Boian Berberov
+# Copyright © 2022, 2024 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -26,25 +26,25 @@ for opt in "$@"
 do
 	case "${opt}" in
 		-d)
-			opts+=" -d"
+			opts+=' -d'
 		;;
 		-e)
-			opts+=" -e"
+			opts+=' -e'
 		;;
 		-s)
-			opts+=" -s"
+			opts+=' -s'
 		;;
 		-3)
-			opts+=" -3"
+			opts+=' -3'
 		;;
 		-u)
-			opts+=" -u"
+			opts+=' -u'
 		;;
 		-f)
-			opts+=" -f"
+			opts+=' -f'
 		;;
 		--all)
-			opts=" -u -f"
+			opts=' -u -f'
 			break;
 		;;
 		--help|-?)
@@ -52,9 +52,11 @@ do
 			exit 0
 		;;
 		*)
-			echo "ERROR: Unknown option: ${opt}" > /dev/stderr
-			echo > /dev/stderr
-			echo "Use --help to see the available options" > /dev/stderr
+			echo "\
+\e[1;31mERROR: Unknown option: ${opt}\e[0m
+
+Use --help to see the available options"\
+				> /dev/stderr
 			exit 1
 		;;
 	esac
@@ -62,7 +64,7 @@ done
 
 if   [[ "`adb get-state`" != 'device' ]]
 then
-	echo 'ERROR: Default Android device is not available' > /dev/stderr
+	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1
 fi
 

@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2022 Boian Berberov
+# Copyright © 2022, 2024 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -8,7 +8,7 @@
 
 if   [[ "`adb get-state`" != 'device' ]]
 then
-	echo 'ERROR: Default Android device is not available' > /dev/stderr
+	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1
 fi
 
@@ -16,10 +16,12 @@ sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
 
 if   (( "${sdk}" < 23 ))
 then
-	echo 'INFO: Cannot list settings on Android 5.1 and older devices'
-	echo 'INFO: Showing some known settings'
+	echo '\
+INFO: Cannot list settings on Android 5.1 and older devices
+INFO: Showing some known settings'\
+		 > /dev/stderr
 
-	echo "System:"
+	echo 'System:'
 		# Unavailable
 		# 'alarm_set'
 		# 'notification_set'
@@ -47,7 +49,7 @@ then
 		echo $'\t'"${i}: `adb shell settings get system ${i}`"
 	done
 
-	echo "Secure:"
+	echo 'Secure:'
 	for i in \
 		'android_id' \
 		'bluetooth_address' \
@@ -60,7 +62,7 @@ then
 	do
 		echo $'\t'"${i}: `adb shell settings get secure ${i}`"
 	done
-	echo "Global:"
+	echo 'Global:'
 		# Unavailable
 		# 'webview_provider'
 	for i in \
@@ -77,10 +79,10 @@ then
 		echo $'\t'"${i}: `adb shell settings get global ${i}`"
 	done
 else
-	echo "System:"
-	adb shell "settings list system" | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
-	echo "Secure:"
-	adb shell "settings list secure" | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
-	echo "Global:"
-	adb shell "settings list global" | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
+	echo 'System:'
+	adb shell 'settings list system' | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
+	echo 'Secure:'
+	adb shell 'settings list secure' | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
+	echo 'Global:'
+	adb shell 'settings list global' | sed -e 's/\r//g; s/^/\t/; s/=/: /' | sort
 fi

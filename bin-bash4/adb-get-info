@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 # bash 4.0 minimum - readarray
 
-# Copyright © 2022 Boian Berberov
+# Copyright © 2022, 2024 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -28,9 +28,11 @@ do
 			exit 0
 		;;
 		*)
-			echo "ERROR: Unknown option: ${opt}" > /dev/stderr
-			echo > /dev/stderr
-			echo "Use --help to see the available options" > /dev/stderr
+			echo -e "\
+\e[1;31mERROR: Unknown option: ${opt}\e[0m
+
+Use --help to see the available options"\
+				> /dev/stderr
 			exit 1
 		;;
 	esac
@@ -38,7 +40,7 @@ done
 
 if   [[ "`adb get-state`" != 'device' ]]
 then
-	echo "ERROR: Default Android device is not available"
+	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1
 fi
 
@@ -49,9 +51,9 @@ readarray -t lines < <(adb shell 'getprop' | tr -d '\r[]')
 
 for line in "${lines[@]}"
 do
-   key="${line%%: *}"
-   value="${line#*: }"
-   props[${key}]="${value}"
+	key="${line%%: *}"
+	value="${line#*: }"
+	props[${key}]="${value}"
 done
 
 if   [[ "${pii}" == 'true' ]]

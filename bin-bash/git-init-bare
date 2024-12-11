@@ -31,7 +31,7 @@ if   [[ -v workdir && -v prefix ]]
 then
 	treedir="/${workdir}/${prefix}-git-init-${timestamp}"
 else
-	echo 'ERROR: Unable to find a temporary directory for the initial checkout'
+	echo -e '\e[1;31mERROR: Unable to find a temporary directory for the initial checkout\e[0m' > /dev/stderr
 	exit 1
 fi
 

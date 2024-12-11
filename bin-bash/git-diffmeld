@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2023 Boian Berberov
+# Copyright © 2023, 2024 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -35,9 +35,10 @@ then
 				exit 0
 			;;
 			*)
-				echo "ERROR: Unknown option: ${opt}" > /dev/stderr
-				echo > /dev/stderr
-				echo "Use -? to see the available options" > /dev/stderr
+				echo -e "\
+ERROR: Unknown option: ${opt}
+
+Use -? to see the available options" > /dev/stderr
 				exit 1
 			;;
 		esac
