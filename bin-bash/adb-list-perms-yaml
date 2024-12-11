@@ -79,4 +79,4 @@ adb shell "${command} list permissions -g -f" \
 	' \
 | sed -E -e '/\tprotectionLevel:/s/[-]/\n\t\t-/g' \
 | sed -e 's/+ /- /' \
-| filter-indent-tab-to-2sp
+| filter-indent --tab-to-2sp

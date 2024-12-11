@@ -22,7 +22,7 @@ fi
 
 adb shell 'dumpsys appops' \
 | tr -d '\r' \
-| filter-indent-2sp-to-tab \
+| filter-indent --2sp-to-tab \
 | filter-presort-indented \
 | sed -e '
 	/All mode watchers:/d

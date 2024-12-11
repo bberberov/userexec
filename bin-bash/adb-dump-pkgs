@@ -31,7 +31,7 @@ fi
 
 adb shell 'dumpsys package packages' \
 | tr -d '\r' \
-| filter-indent-2sp-to-tab \
+| filter-indent --2sp-to-tab \
 \
 | sed -E -e '
 	/^\t\t(pkg|applicationInfo|signatures)=/d

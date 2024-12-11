@@ -31,7 +31,7 @@ fi
 
 adb shell "dumpsys package $1" \
 | tr -d '\r' \
-| filter-indent-2sp-to-tab \
+| filter-indent --2sp-to-tab \
 \
 | filter-presort-indented \
 | grep -E -e '^(Packages|Hidden system packages|Shared users):' \
