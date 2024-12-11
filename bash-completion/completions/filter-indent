@@ -1,0 +1,19 @@
+#! /usr/bin/env bash
+
+# Copyright © 2024 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+complete -W '
+	--1sp-to-tab
+	--2sp-to-tab
+	--4sp-to-tab
+	--8sp-to-tab
+	--tab-to-1sp
+	--tab-to-2sp
+	--tab-to-4sp
+	--tab-to-8sp
+	--help
+' filter-indent
