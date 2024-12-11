@@ -8,5 +8,15 @@
 
 _git_global_status()
 {
-	__gitcomp '--origin --path --git-dir --repo --worktree --no-ab --status --upstream --no-untracked'
+	__gitcomp '
+		--origin
+		--path
+		--git-dir
+		--repo
+		--worktree
+		--no-ab
+		--status
+		--upstream
+		--no-untracked
+	'
 }
