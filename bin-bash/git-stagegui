@@ -31,10 +31,10 @@ do
 	case "${opt}" in
 		# Options
 		--dense)
-			gitopts+=' -c diff.interHunkContext=1 -c diff.interHunkContext=3'
+			gitopts+=' -c gui.diffContext=1 -c diff.interHunkContext=3'
 		;;
 		--sparse)
-			gitopts+=' -c diff.interHunkContext=5 -c diff.interHunkContext=10'
+			gitopts+=' -c gui.diffContext=5 -c diff.interHunkContext=10'
 		;;
 		# git diff options
 		--diff-algorithm=)
