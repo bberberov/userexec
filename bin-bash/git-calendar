@@ -1,0 +1,94 @@
+#! /usr/bin/env bash
+
+# Copyright © 2024 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+function usage() {
+echo "
+View commits in a calendar-like list
+
+git calendar [options]
+
+Options:
+    --author-order
+    --committer-order
+    --authors
+    --committers
+    --day
+    --week
+    --month
+    --year
+    --help|-?
+
+git shortlog Options:
+    --all
+    --branches
+    --tags
+    --no-merges
+    --full-history
+"
+}
+
+gitsubopts=''
+optgroup='%cd'
+optdate='format-local:%Y'
+reflist=''
+
+for opt in "$@"
+do
+	case "${opt}" in
+		# Options
+		--author-order)
+			optgroup='%ad'
+		;;
+		--committer-order)
+			optgroup='%cd'
+		;;
+		--authors)
+			optgroup='%ad  %aN  <%aE>'
+		;;
+		--committers)
+			optgroup='%ad  %aN  <%aE>'
+		;;
+		--day)
+			optdate='short-local'
+		;;
+		--week)
+			optdate='format-local:%Y, week %V'
+		;;
+		--month)
+			optdate='format-local:%Y-%m  %B'
+		;;
+		--year)
+			optdate='format-local:%Y'
+		;;
+		# shortlog options
+		--all|--branches|--tags|--no-merges|--full-history)
+			gitsubopts+=" ${opt}"
+		;;
+		--help|-?)
+			usage
+			exit 0
+		;;
+		--*|-*)
+				echo -e "\
+ERROR: Unknown option: ${opt}
+
+Use -? to see the available options" > /dev/stderr
+				exit 1
+		;;
+		*)
+			if   git check-ref-format --allow-onelevel "${opt}"
+			then
+				reflist+=" ${opt}"
+			else
+				echo -e "WARN: Unknown reference: ${opt}" > /dev/stderr
+			fi
+		;;
+	esac
+done
+
+git shortlog -s ${gitsubopts} --group="${optgroup}" --date="${optdate}" ${reflist}

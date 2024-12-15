@@ -1,0 +1,116 @@
+#! /usr/bin/env bash
+
+# Copyright © 2024 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+function usage() {
+echo "
+View commits in a histogram-like list
+
+git histogram [options]
+
+Options:
+    --author-order
+    --committer-order
+    --authors
+    --committers
+    --hour
+    --weekday
+    --week
+    --month
+    --help|-?
+
+git shortlog Options:
+    --all
+    --branches
+    --tags
+    --no-merges
+    --full-history
+"
+}
+
+gitsubopts=''
+mode='time'
+opttime='%cd'
+optname='%aN  <%aE>'
+optdate='format-local:%m  %B'
+reflist=''
+
+for opt in "$@"
+do
+	case "${opt}" in
+		# Options
+		--author-order)
+			opttime='%ad'
+		;;
+		--committer-order)
+			opttime='%cd'
+		;;
+		--authors)
+			mode='name'
+			optname='%aN  <%aE>'
+		;;
+		--committers)
+			mode='name'
+			optname='%cN  <%cE>'
+		;;
+		--hour)
+			mode='time'
+			optdate='format-local:%H'
+		;;
+		--weekday)
+			mode='time'
+			optdate='format-local:%u  %A'
+		;;
+		--week)
+			mode='time'
+			optdate='format-local:week %V'
+		;;
+		--month)
+			mode='time'
+			optdate='format-local:%m  %B'
+		;;
+		# shortlog options
+		--all|--branches|--tags|--no-merges|--full-history)
+			gitsubopts+=" ${opt}"
+		;;
+		--help|-?)
+			usage
+			exit 0
+		;;
+		--*|-*)
+				echo -e "\
+ERROR: Unknown option: ${opt}
+
+Use -? to see the available options" > /dev/stderr
+				exit 1
+		;;
+		*)
+			if   git check-ref-format --allow-onelevel "${opt}"
+			then
+				reflist+=" ${opt}"
+			else
+				echo -e "WARN: Unknown reference: ${opt}" > /dev/stderr
+			fi
+		;;
+	esac
+done
+
+case "${mode}" in
+	name)
+		git shortlog -s ${gitsubopts} --group="${optname}" ${reflist}
+		exit $?
+	;;
+	time)
+		git shortlog -s ${gitsubopts} --group="${opttime}" --date="${optdate}" ${reflist}
+		exit $?
+	;;
+	*)
+		echo -e "ERROR: Unknown mode: ${mode}" > /dev/stderr
+		exit 1
+	;;
+esac
+
