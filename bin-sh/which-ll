@@ -8,7 +8,7 @@
 
 for name in "$@"
 do
-	if [ -a "${name}" ]
+	if [ -e "${name}" ]
 	then
 		ls --color=auto -lhd "${name}"
 	elif filepath=`which "${name}" 2>/dev/null`

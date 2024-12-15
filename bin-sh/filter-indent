@@ -8,7 +8,7 @@
 
 # Works up to a depth of 12 indentations
 
-function usage() {
+usage() {
 echo '
 Convert tabs to spaces or vice-versa
 Options:
