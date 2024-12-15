@@ -1,0 +1,63 @@
+#! /usr/bin/env bash
+
+# Copyright © 2024 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+function usage() {
+echo "
+Helper for \`git citool\`
+
+git stagegui [options]
+
+Options:
+    --dense
+    --sparse
+    --help|-?
+
+git diff Options:
+    --diff-algorithm=
+    --inter-hunk-context=
+    --unified=
+"
+}
+
+gitopts=''
+
+for opt in "$@"
+do
+	case "${opt}" in
+		# Options
+		--dense)
+			gitopts+=' -c diff.interHunkContext=1 -c diff.interHunkContext=3'
+		;;
+		--sparse)
+			gitopts+=' -c diff.interHunkContext=5 -c diff.interHunkContext=10'
+		;;
+		# git diff options
+		--diff-algorithm=)
+			gitopts+=" -c diff.algorithm=${opt#--diff-algorithm=}"
+		;;
+		--inter-hunk-context=)
+			gitopts+=" -c diff.interHunkContext=${opt#--inter-hunk-context=}"
+		;;
+		--unified=)
+			gitopts+=" -c gui.diffContext=${opt#--unified=}"
+		;;
+		--help|-?)
+			usage
+			exit 0
+		;;
+		*)
+			echo -e "\
+ERROR: Unknown option: ${opt}
+
+Use -? to see the available options" > /dev/stderr
+			exit 1
+		;;
+	esac
+done
+
+git ${gitopts} citool
