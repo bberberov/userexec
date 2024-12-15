@@ -1,0 +1,218 @@
+#! /usr/bin/env bash
+
+# Copyright © 2024 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+function usage() {
+echo "
+View the age of lines in a file, like \`git blame\`
+
+git chrono [options] <filename>
+
+Options:
+    --linear-days
+    --linear-weeks
+    --linear-months
+    --linear-years
+    --quadratic-days
+    --quadratic-weeks
+    --quadratic-months
+    --quadratic-years
+    --help|-?
+"
+}
+
+gitopts=''
+highlight="\
+	brightblack,\
+	5 years  ago,\
+	red,\
+	1 year   ago,\
+	yellow,\
+	3 months ago,\
+	green,\
+	1 month  ago,\
+	cyan,\
+	1 week   ago,\
+	blue,\
+	1 day    ago,\
+	magenta\
+"
+
+gitsubopts=''
+optgroup='%cd'
+optdate='format-local:%Y'
+filename=''
+
+for opt in "$@"
+do
+	case "${opt}" in
+		# Options
+		--linear-days)
+			highlight="\
+			brightblack,\
+			12 days ago,\
+			red,\
+			10 days ago,\
+			yellow,\
+			8  days ago,\
+			green,\
+			6  days ago,\
+			cyan,\
+			4  days ago,\
+			blue,\
+			2  days ago,\
+			magenta"
+		;;
+		--linear-weeks)
+			highlight="\
+			brightblack,\
+			12 weeks ago,\
+			red,\
+			10 weeks ago,\
+			yellow,\
+			8  weeks ago,\
+			green,\
+			6  weeks ago,\
+			cyan,\
+			4  weeks ago,\
+			blue,\
+			2  weeks ago,\
+			magenta"
+		;;
+		--linear-months)
+			highlight="\
+			brightblack,\
+			12 months ago,\
+			red,\
+			10 months ago,\
+			yellow,\
+			8  months ago,\
+			green,\
+			6  months ago,\
+			cyan,\
+			4  months ago,\
+			blue,\
+			2  months ago,\
+			magenta"
+		;;
+		--linear-years)
+			highlight="\
+			brightblack,\
+			12 years ago,\
+			red,\
+			10 years ago,\
+			yellow,\
+			8  years ago,\
+			green,\
+			6  years ago,\
+			cyan,\
+			4  years ago,\
+			blue,\
+			2  years ago,\
+			magenta"
+		;;
+		--quadratic-days)
+			highlight="\
+			brightblack,\
+			25 days  ago,\
+			red,\
+			16 days  ago,\
+			yellow,\
+			9  days  ago,\
+			green,\
+			4  days  ago,\
+			cyan,\
+			2  days  ago,\
+			blue,\
+			12 hours ago,\
+			magenta"
+		;;
+		--quadratic-weeks)
+			highlight="\
+			brightblack,\
+			16 weeks ago,\
+			red,\
+			9  weeks ago,\
+			yellow,\
+			4  weeks ago,\
+			green,\
+			2  weeks ago,\
+			cyan,\
+			1  week  ago,\
+			blue,\
+			42 hours ago,\
+			magenta"
+		;;
+		--quadratic-months)
+			highlight="\
+			brightblack,\
+			16 months ago,\
+			red,\
+			9  months ago,\
+			yellow,\
+			4  months ago,\
+			green,\
+			2  months ago,\
+			cyan,\
+			1  month  ago,\
+			blue,\
+			1  week   ago,\
+			magenta"
+		;;
+		--quadratic-years)
+			highlight="\
+			brightblack,\
+			16 years  ago,\
+			red,\
+			9  years  ago,\
+			yellow,\
+			4  years  ago,\
+			green,\
+			2  years  ago,\
+			cyan,\
+			1  year   ago,\
+			blue,\
+			3  months ago,\
+			magenta"
+		;;
+		--help|-?)
+			usage
+			exit 0
+		;;
+		--*|-*)
+				echo -e "\
+ERROR: Unknown option: ${opt}
+
+Use -? to see the available options" > /dev/stderr
+				exit 1
+		;;
+		*)
+			if   [[ -z "${filename}" ]]
+			then
+				if   [[ -f "${opt}" ]]
+				then
+					filename="${opt}"
+				else
+					echo -e "ERROR: ${opt} is not a file" > /dev/stderr
+					exit 1
+				fi
+			else
+				echo -e "ERROR: Cannot specify more than one file" > /dev/stderr
+				exit 1
+			fi
+		;;
+	esac
+done
+
+
+if   [[ -n "${filename}" ]]
+then
+	git -c color.blame.highlightRecent="${highlight}" blame --color-by-age ${gitsubopts} -- "${filename}"
+else
+	echo -e "ERROR: missing filename" > /dev/stderr
+	exit 1
+fi
