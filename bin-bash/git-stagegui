@@ -37,13 +37,13 @@ do
 			gitopts+=' -c gui.diffContext=5 -c diff.interHunkContext=10'
 		;;
 		# git diff options
-		--diff-algorithm=)
+		--diff-algorithm=*)
 			gitopts+=" -c diff.algorithm=${opt#--diff-algorithm=}"
 		;;
-		--inter-hunk-context=)
+		--inter-hunk-context=*)
 			gitopts+=" -c diff.interHunkContext=${opt#--inter-hunk-context=}"
 		;;
-		--unified=)
+		--unified=*)
 			gitopts+=" -c gui.diffContext=${opt#--unified=}"
 		;;
 		--help|-?)
