@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2024 Boian Berberov
+# Copyright © 2024, 2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -16,18 +16,24 @@ _git_stagegui()
 			__gitcomp "${__git_diff_algorithms}" '' "${cur##--diff-algorithm=}"
 			return
 		;;
-		--inter-hunk-context=|--unified=)
-			__gitcomp '1 2 3 4 5 6 7 8 9'
+		--inter-hunk-context=*)
+			__gitcomp '1 2 3 4 5 6 7 8 9' '' "${cur##--inter-hunk-context=}"
+			return
+		;;
+		--unified=*)
+			__gitcomp '1 2 3 4 5 6 7 8 9' '' "${cur##--unified=}"
+			return
+		;;
+		*)
+			__gitcomp '
+				--dense
+				--sparse
+
+				--diff-algorithm=
+				--inter-hunk-context=
+				--unified=
+			'
 			return
 		;;
 	esac
-
-	__gitcomp '
-		--dense
-		--sparse
-
-		--diff-algorithm=
-		--inter-hunk-context=
-		--unified=
-	'
 }
