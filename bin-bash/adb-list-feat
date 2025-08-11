@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2022, 2024 Boian Berberov
+# Copyright © 2022, 2024, 2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -21,4 +21,4 @@ else
 	command='cmd package'
 fi
 
-adb shell "${command} list features" | sed -e 's/\r//g; s/^feature://' | sort
+adb shell "${command} list features" | sed -e 's/\r//g; s/^feature://' | LC_ALL=C sort

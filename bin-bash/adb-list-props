@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2022, 2024 Boian Berberov
+# Copyright © 2022, 2024, 2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -19,4 +19,4 @@ adb shell 'getprop' \
 	s/\]: \[/: /
 	s/\]$//
 ' \
-| sort
+| LC_ALL=C sort
