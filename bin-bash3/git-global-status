@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2023, 2024 Boian Berberov
+# Copyright © 2023, 2024, 2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -9,14 +9,17 @@
 function usage() {
 echo '
 Show the extended status of multiple repositories and/or trees
+
+git global-status [options]... [repo_path]...
+
 Options:
-    --origin
-    --path
-    --repo
-    --worktree
+    --origin    List by "origin" remote location
+    --path      List by worktree configuration location
+    --repo      List by repository location (default)
+    --worktree  List by worktree location
     --no-ab
-    --status
-    --upstream
+    --status    Show status information
+    --upstream  Show commit counts relative to UPSTREAM_HEAD symbolic reference
 '
 }
 
@@ -80,7 +83,7 @@ pushd . > /dev/null
 for src_path in "${dirs[@]}"
 do
 	echo "Looking for repos in ${src_path} ..."
-	for worktree_file in $(find "${src_path}" -type f -name gitdir -print)
+	for worktree_file in $(find "${src_path}" -type f -name gitdir -print | sort)
 	do
 		worktree="$(sed -e s:\/\.git\$:: ${worktree_file})"
 
