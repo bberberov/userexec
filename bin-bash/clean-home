@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2021, 2022, 2023, 2024 Boian Berberov
+# Copyright © 2021, 2022, 2023, 2024, 2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -22,6 +22,12 @@ if   [[ -d "${HOME}/.cache/kio_http" ]] && which find > /dev/null 2>&1
 then
 	echo 'Clearing KDE: web cache older than 30 days ...'
 	find "${HOME}/.cache/kio_http" -name '*[0-9]*' -mtime +30 -delete
+fi
+
+if   [[ -d "${HOME}/.cache/drkonqi/crashes" ]] && which find > /dev/null 2>&1
+then
+	echo 'Clearing KDE: DrKonqi crashes cache older than 30 days ...'
+	find "${HOME}/.cache/drkonqi/crashes" -name '*.ini' -mtime +30 -delete
 fi
 
 if   [[ -f "${HOME}/.local/share/akonadi/db_data/mysql.err.old" ]]
@@ -46,12 +52,15 @@ fi
 
 echo 'Removing directories ...'
 for dir in \
-	"${HOME}/.local/share/virtualenv/wheel" \
+	"${HOME}/.cache/KDE/tokodon/nam" \
 	"${HOME}/.cache/appstream" \
+	"${HOME}/.cache/ccache" \
 	"${HOME}/.cache/flatpak" \
+	"${HOME}/.cache/khelpcenter/index" \
 	"${HOME}/.cache/minetest" \
 	"${HOME}/.cache/pre-commit" \
 	"${HOME}/.cache/rust2rpm" \
+	"${HOME}/.local/share/virtualenv/wheel" \
 ;
 do
 	if   [[ -d "${dir}" ]]
