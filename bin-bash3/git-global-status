@@ -135,7 +135,7 @@ do
 				echo -ne ' is'
 
 				ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options ${ref}@{upstream})"
-				if [ -n ${ups_ref} ]
+				if [ -n "${ups_ref}" ]
 				then
 					ahead=$(git rev-list --count ${ups_ref}..${ref})
 					behind=$(git rev-list --count ${ref}..${ups_ref})
