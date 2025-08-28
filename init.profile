@@ -1,12 +1,10 @@
 #! /bin/sh
 
-# Copyright © 2024 Boian Berberov
+# Copyright © 2024, 2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
-
-origin="$(realpath $(dirname ${BASH_SOURCE[0]} ) )"
 
 new_PATH="${PATH}"
 
@@ -28,34 +26,45 @@ check_and_set_bash()
 	fi
 }
 
-check_and_set_sh "${origin}/bin-sh"
-
 if   test -n "${BASH_VERSION}"
 then
-	check_and_set_bash "${origin}/bin-bash"
+	origin="$( realpath "$( dirname "${BASH_SOURCE[0]}" )" )"
+else
+	origin="$( realpath "$( dirname "${0}" )" )"
+fi
 
-	if   (( 3 <= BASH_VERSINFO[0] ))
+check_and_set_sh "${origin}/bin-sh"
+
+if   which realpath > /dev/null 2>&1 && which dirname > /dev/null 2>&1
+then
+	if   test -n "${BASH_VERSION}"
 	then
-		check_and_set_bash "${origin}/bin-bash3"
+		check_and_set_bash "${origin}/bin-bash"
 
-		if   (( 4 <= BASH_VERSINFO[0] ))
+		if   (( 3 <= BASH_VERSINFO[0] ))
 		then
-			check_and_set_bash "${origin}/bin-bash4"
+			check_and_set_bash "${origin}/bin-bash3"
 
-			if   (( 5 <= BASH_VERSINFO[0] ))
+			if   (( 4 <= BASH_VERSINFO[0] ))
 			then
-				check_and_set_bash "${origin}/bin-bash5"
+				check_and_set_bash "${origin}/bin-bash4"
 
+				if   (( 5 <= BASH_VERSINFO[0] ))
+				then
+					check_and_set_bash "${origin}/bin-bash5"
+
+				fi
 			fi
 		fi
 	fi
+
+	if   which python3 > /dev/null 2>&1
+	then
+		check_and_set_sh "${origin}/bin-python3"
+	fi
 fi
 
-if   which python3 > /dev/null 2>&1
-then
-	check_and_set_sh "${origin}/bin-python3"
-fi
-
+check_and_set_sh "${HOME}/.local/bin"
 check_and_set_sh "${HOME}/bin"
 
 export PATH="${new_PATH}"
