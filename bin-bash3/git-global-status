@@ -85,7 +85,8 @@ do
 	echo "Looking for repos in ${src_path} ..."
 	for worktree_file in $(find "${src_path}" -type f -name gitdir -print | sort)
 	do
-		worktree="$(sed -e s:\/\.git\$:: ${worktree_file})"
+		worktree_git=$(< "${worktree_file}")
+		worktree="${worktree_git%/.git}"
 
 		case "${opt_disppath}" in
 			origin)
