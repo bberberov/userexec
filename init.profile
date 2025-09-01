@@ -6,25 +6,10 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-new_PATH="${PATH}"
-
-check_and_set_sh()
-{
-	if   test -d "${1}"
-	then
-		echo ":${PATH}:" | grep -E ":${1}/?:" > /dev/null \
-		|| new_PATH="${1}:${new_PATH}"
-	fi
-}
-
-check_and_set_bash()
-{
-	if   [[ -d "${1}" ]]
-	then
-		[[ ":${PATH}:" =~ ":${1}"/?':' ]] \
-		|| new_PATH="${1}:${new_PATH}"
-	fi
-}
+if   ! which realpath > /dev/null 2>&1 || ! which dirname  > /dev/null 2>&1
+then
+	exit 0
+fi
 
 if   test -n "${BASH_VERSION}"
 then
@@ -33,38 +18,83 @@ else
 	origin="$( realpath "$( dirname "${0}" )" )"
 fi
 
-check_and_set_sh "${origin}/bin-sh"
-
-if   which realpath > /dev/null 2>&1 && which dirname > /dev/null 2>&1
-then
-	if   test -n "${BASH_VERSION}"
+check_and_set()
+{
+	if   test -d "${1}"
 	then
-		check_and_set_bash "${origin}/bin-bash"
+		new_PATH="${1}:${new_PATH}"
+	fi
+}
 
-		if   (( 3 <= BASH_VERSINFO[0] ))
+# Clean if/when re-sourcing, Bash 2.0 compatible
+new_PATH=":${PATH}:"
+pattern=":${origin}/bin-sh:";       new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${origin}/bin-bash:";     new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${origin}/bin-bash3:";    new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${origin}/bin-bash3.1:";  new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${origin}/bin-bash3.2:";  new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${origin}/bin-bash4:";    new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${origin}/bin-bash4.2:";  new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${origin}/bin-bash5:";    new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${origin}/bin-python3:";  new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${HOME}/bin:";            new_PATH="${new_PATH/${pattern}/:}"
+pattern=":${HOME}/.local/bin:";     new_PATH="${new_PATH/${pattern}/:}"
+new_PATH="${new_PATH#:}"
+new_PATH="${new_PATH%:}"
+
+# Generic sh
+check_and_set "${origin}/bin-sh"
+
+# Bash, with versions
+if   test -n "${BASH_VERSION}"
+then
+	check_and_set "${origin}/bin-bash"
+
+	if   (( 3 <= BASH_VERSINFO[0] ))
+	then
+		# NOTE Released on 2004-07-27
+		check_and_set "${origin}/bin-bash3"
+
+		if   (( 1 <= BASH_VERSINFO[1] ))
 		then
-			check_and_set_bash "${origin}/bin-bash3"
+			# NOTE Released on 2005-12-09
+			check_and_set "${origin}/bin-bash3.1"
+		fi
 
-			if   (( 4 <= BASH_VERSINFO[0] ))
+		if   (( 2 <= BASH_VERSINFO[1] ))
+		then
+			# NOTE Released on 2006-10-12
+			check_and_set "${origin}/bin-bash3.2"
+		fi
+
+		if   (( 4 <= BASH_VERSINFO[0] ))
+		then
+			# NOTE Released on 2009-02-20
+			check_and_set "${origin}/bin-bash4"
+
+			if   (( 2 <= BASH_VERSINFO[1] ))
 			then
-				check_and_set_bash "${origin}/bin-bash4"
+				# NOTE Released on 2011-02-14
+				check_and_set "${origin}/bin-bash4.2"
+			fi
 
-				if   (( 5 <= BASH_VERSINFO[0] ))
-				then
-					check_and_set_bash "${origin}/bin-bash5"
+			if   (( 5 <= BASH_VERSINFO[0] ))
+			then
+				# NOTE Released on 2019-01-07
+				check_and_set "${origin}/bin-bash5"
 
-				fi
 			fi
 		fi
 	fi
-
-	if   which python3 > /dev/null 2>&1
-	then
-		check_and_set_sh "${origin}/bin-python3"
-	fi
 fi
 
-check_and_set_sh "${HOME}/.local/bin"
-check_and_set_sh "${HOME}/bin"
+# Python
+if   which python3 > /dev/null 2>&1
+then
+	check_and_set "${origin}/bin-python3"
+fi
+
+# Local /bin
+check_and_set "${HOME}/.local/bin:${HOME}/bin"
 
 export PATH="${new_PATH}"
