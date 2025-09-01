@@ -1,0 +1,20 @@
+#! /bin/sh
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+set -o noclobber
+set -o errexit
+
+for st in Chromium GNU Google LLVM Microsoft Mozilla WebKit
+do
+	for lang in .cpp .cs .java .js .json .m .proto .td .textproto .v
+	do
+		clang-format --dump-config --style="${st}" --assume-filename="${lang}" | sed -e '/^Language/d' > "clang-format.${st}${lang}.yaml"
+		echo -n .
+	done
+done
+echo
