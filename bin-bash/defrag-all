@@ -1,12 +1,18 @@
 #! /usr/bin/env bash
 
-# Copyright © 2021, 2022, 2023, 2024 Boian Berberov
+# Copyright © 2021–2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-for command in 'whoami' 'blkid' 'lsblk'
+if   (( 0 != ${EUID} ))
+then
+	echo -e '\e[33mWARN: You need to run this command as root\e[0m' > /dev/stderr
+	exit 1
+fi
+
+for command in 'blkid' 'lsblk' 'sleep' 'sort' 'sync' 'tr'
 do
 	if   ! which "${command}" > /dev/null 2>&1
 	then
@@ -15,17 +21,21 @@ do
 	fi
 done
 
-if   [[ "`whoami`" == 'root' ]]
-then
-	for storage in `blkid -o device --match-token TYPE='ext4' | sort`
+defrag_all()
+{
+	# $1 - filesystem
+	# $2 - count
+	# $3 - binary
+
+	for fs in $(blkid --output device --usages filesystem --match-token TYPE="$1" | sort)
 	do
-		if   [[ "`lsblk -n -o rota ${storage} | tr -d '[:space:]'`" == '1' ]]
+		if   [[ $(lsblk --noheadings --output=ROTA "${fs}" | tr -d '[:space:]') == '1' ]]
 		then
-			echo -n "Defragmenting ${storage}"
-			for (( i=1 ; i < 4 ; i+=1 ))
+			echo -n "Defragmenting ${fs}"
+			for (( i = 1 ; i <= ${2} ; i += 1 ))
 			do
 				echo -n " ... $i"
-				e4defrag "${storage}" > /dev/null
+				"$3" "${fs}" > /dev/null
 				sleep 3
 				sync
 				sleep 1
@@ -33,7 +43,18 @@ then
 			echo ' ... Done'
 		fi
 	done
+}
+
+if   which e4defrag > /dev/null 2>&1
+then
+	defrag_all ext4 3 e4defrag
 else
-	echo -e '\e[33mWARN: You need to run this command as root\e[0m' > /dev/stderr
-	exit 1
+	echo -e "\e[33mWARN: Skipping Ext4 defragmentation, 'e4defrag' is not available\e[0m" > /dev/stderr
+fi
+
+if   which xfs_fsr > /dev/null 2>&1
+then
+	defrag_all xfs 1 xfs_fsr
+else
+	echo -e "\e[33mWARN: Skipping XFS defragmentation, 'xfs_fsr' is not available\e[0m" > /dev/stderr
 fi
