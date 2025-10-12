@@ -1,0 +1,64 @@
+#! /bin/sh
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+df "$@" \
+| sed -E -e $'
+	# Header
+	1s/^/\e[100m/
+	1s/$/\e[0m/
+
+	1s/ ([0-9.]+)([KMGTPEZYRQ])-/ \\1\e[1;36m\\2\e[22;39m-/g
+	1s/ ([0-9.]+)([kmgtpezyrq]?)B-/ \\1\e[1;34m\\2B\e[22;39m-/g
+
+	${
+		/^total /{
+			# Footer
+			s/^/\e[100m/
+			s/$/\e[0m/
+		}
+		/ total /{
+			# Footer
+			s/^/\e[100m/
+			s/$/\e[0m/
+		}
+	}
+
+	# Extra Space
+	s/[[:space:]]+/& /g
+	1s/Mounted  on/Mounted on/
+	s/^/ /
+	s/$/ /
+
+
+	# Units
+	s/ ([0-9.]+)([KMGTPEZYRQ]) / \\1\e[1;36m\\2\e[22;39m /g
+	s/ ([0-9.]+)([kmgtpezyrq]) / \\1\e[1;34m\\2\e[22;39m /g
+
+	# Percents
+	s/([9][0-9])%/\e[31m\\1\e[39m%\e[39m/g
+	s/([8][0-9])%/\e[33m\\1\e[39m%\e[39m/g
+	s/([2-7][0-9])%/\e[32m\\1\e[39m%\e[39m/g
+	s/([10 ][0-9])%/\e[35m\\1\e[39m%\e[39m/g
+
+	# Devices
+	s@/dev/[sv]d[a-z][0-9]*@\e[93m&\e[0m@;
+	s@/dev/shm@\e[92m&\e[0m@;
+
+	# Filesystems
+	s/ (bcachefs|btrfs|exfat|ext[234]|f2fs|hfsplusjfs|vfat|udf|xfs|zfs) / \e[32m\\1\e[0m /g
+	s/ (tmpfs) / \e[95m\\1\e[0m /g
+	s/ (ceph|cifs|coda|nfs) / \e[96m\\1\e[0m /g
+	s/ (binfmt_misc|bpf|cgroup2|configfs|debugfs|devpts|devtmpfs|hugetlbfs|proc|securityfs|sysfs) / \e[31m\\1\e[0m /g
+
+	# Numbers
+	s/ ([-0]) / \e[90m\\1\e[39m /g
+	s/ ([0-9]{1,3})([0-9]{3}) / \\1\e[90m\\2\e[39m /g
+	s/ ([0-9]{1,3})([0-9]{3})([0-9]{3}) / \\1\e[90m\\2\e[39m\\3 /g
+	s/ ([0-9]{1,3})([0-9]{3})([0-9]{3})([0-9]{3}) / \\1\e[90m\\2\e[39m\\3\e[90m\\4\e[39m /g
+	s/ ([0-9]{1,3})([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{3}) / \\1\e[90m\\2\e[39m\\3\e[90m\\4\e[39m\\5 /g
+'

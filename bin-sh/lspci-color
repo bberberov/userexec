@@ -1,0 +1,154 @@
+#! /bin/sh
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+lspci "$@" \
+| sed -E -e $'
+	# Rewrite strings
+	s/Intel Corporation/Intel/;
+	s/NVIDIA Corporation/NVIDIA/;
+	s/USB Enhanced Host Controller/USB 2.0 Enhanced Host Controller/;
+
+	# List
+	/^[0-9a-f]{2}:[0-9a-f]{2}\.[0-9a-f] /{
+		# Highlight ID
+		s/^/\e[1m/;
+		s/ /\e[0m /;
+
+		# Highlight Type
+		s/ ([^:]+:)/ \e[36m\\1\e[0m/
+
+		# Unknowns
+		s/(Device [0-9a-f]{4})/\e[31m\\1\e[0m/
+	}
+
+	# Verbose
+	/^\tSubsystem: /{
+		# Header
+		s/Subsystem:/\e[90mSubsystem:\e[0m/
+
+		# Unknowns
+		s/(Device [0-9a-f]{4})/\e[31m\\1\e[0m/
+	}
+
+	/^\tFlags: /{
+		# Header
+		s/Flags:/\e[90mFlags:\e[0m/
+
+		# Highlight values
+		s/bus master/\e[32mbus master\e[0m/
+		s/(IRQ [0-9]+)$/\e[35m\\1\e[0m/
+	}
+
+	/^\tDeviceName: /{
+		# Header
+		s/DeviceName:/\e[90mDeviceName:\e[0m/
+	}
+	/^\tControl: /{
+		# Header
+		s/Control:/\e[90mControl:\e[0m/
+
+		# Highlight values
+		s/BusMaster\+/\e[32mBusMaster+\e[0m/
+	}
+	/^\tStatus: /{
+		# Header
+		s/Status:/\e[90mStatus:\e[0m/
+	}
+	/^\tLatency: /{
+		# Header
+		s/Latency:/\e[90mLatency:\e[0m/
+	}
+	/^\tInterrupt: /{
+		# Header
+		s/Interrupt:/\e[90mInterrupt:\e[0m/
+
+		# Highlight values
+		s/(IRQ [0-9]+)$/\e[35m\\1\e[0m/
+	}
+	/^\tBus: /{
+		# Header
+		s/Bus:/\e[90mBus:\e[0m/
+	}
+	/^\tI\/O behind bridge: /{
+		# Header
+		s/I\/O behind bridge:/\e[90mI\/O behind bridge:\e[0m/
+	}
+	/^\tMemory behind bridge: /{
+		# Header
+		s/Memory behind bridge:/\e[90mMemory behind bridge:\e[0m/
+	}
+	/^\tPrefetchable memory behind bridge: /{
+		# Header
+		s/Prefetchable memory behind bridge:/\e[90mPrefetchable memory behind bridge:\e[0m/
+	}
+	/^\tSecondary status: /{
+		# Header
+		s/Secondary status:/\e[90mSecondary status:\e[0m/
+	}
+	/^\tBridgeCtl: /{
+		# Header
+		s/BridgeCtl:/\e[90mBridgeCtl:\e[0m/
+	}
+	/^\tRegion [0-9]+: /{
+		# Header
+		s/\tRegion/\t\e[90mRegion\e[0m/
+		s/:/\e[90m:\e[0m/
+	}
+
+	/^\tCapabilities: /{
+		# Header
+		s/Capabilities:/\e[90mCapabilities:\e[0m/
+	}
+	/^\tKernel driver in use: /{
+		# Highlight values
+		s/: /: \e[1m/;
+		s/$/\e[0m/;
+
+		# Header
+		s/Kernel driver in use:/\e[90mKernel driver in use:\e[0m/
+	}
+	/^\tKernel modules: /{
+		# Highlight values
+		s/: /: \e[1m/;
+		s/$/\e[0m/;
+
+		# Header
+		s/Kernel modules:/\e[90mKernel modules:\e[0m/
+	}
+
+	# Expansion ROM
+	/^\tExpansion ROM /{
+		s/Expansion ROM/\e[35mExpansion ROM\e[0m/
+	}
+
+	# Errors
+	/^\t!!! Unknown header type/{
+		s/^/\e[1;31m/; s/$/\e[0m/;
+	}
+
+	# Tree
+	/\+-/{
+		s/\+-/\e[1;30m+-\e[0m/g
+
+		s/([0-9a-f]{2}\.[0-9a-f])/\e[1m\\1\e[0m/g
+	}
+	s/\| /\e[1;30m| \e[0m/g
+	s/\]([-]+)/\e[1;30m]\\1\e[0m/g
+	/-\[/{
+		s/-\[/\e[1;30m-[\e[0m/g
+
+		s/([0-9a-f]{4}:[0-9a-f]{2})/\e[1m\\1\e[0m/
+
+		s/([0-9a-f]{2}\.[0-9a-f])/\e[1m\\1\e[0m/g
+	}
+	/\\\\-/{
+		s/\\\\-/\e[1;30m\\\\-\e[0m/g
+
+		s/([0-9a-f]{2}\.[0-9a-f])/\e[1m\\1\e[0m/g
+	}
+'
