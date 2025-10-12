@@ -6,9 +6,11 @@ A collection of scripts and tools.  They are either wrappers, too small for an i
 
 These scripts and tools assume that the `which` command is always available!  The availability of other commands it tested with it.  Simple scripts which use `sed` will generate normal "not found" errors.
 
+The minimum supported Bash version is 2.02, from 1998-04-18.
+
 ## Goals
 
-- Cross-platform: Windows, Linux, macOS, BSD, ...
+- Cross-platform: BSD, Linux, macOS, Windows, ...
 
 ## See Also
 
