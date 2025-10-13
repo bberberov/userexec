@@ -1,0 +1,36 @@
+#! /usr/bin/env bash
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+_list-var()
+{
+	local vars=''
+	for var in \
+		'BASH_COMPLETION_USER_DIR' \
+		'GTK2_RC_FILES' \
+		'GTK_RC_FILES' \
+		'LS_COLORS' \
+		'MANPATH' \
+		'PATH' \
+		'XDG_CONFIG_DIRS' \
+		'XDG_DATA_DIRS' \
+		;
+	do
+		[[ -n "${!var}" ]] && vars+=" ${var}"
+	done
+
+	case "${COMP_CWORD}" in
+		1)
+			COMPREPLY=( $(compgen -W "${vars}" -- "${COMP_WORDS[COMP_CWORD]}") )
+			return 0
+		;;
+	esac
+
+	return 0
+}
+
+complete -F _list-var list-var

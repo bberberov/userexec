@@ -1,0 +1,21 @@
+#! /usr/bin/env bash
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+varval="${!1}"
+
+if   [[ -n "${varval}" ]]
+then
+	if   [[ -n "${2}" ]]
+	then
+		sep="${2}"
+	else
+		sep=':'
+	fi
+
+	echo "${varval//${sep}/$'\n'}"
+fi
