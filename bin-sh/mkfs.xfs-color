@@ -1,0 +1,54 @@
+#! /bin/sh
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+mkfs.xfs "$@" \
+| sed -E -e $'
+	1{
+		s/^Parameters parsed from config file /&\e[1m/
+		s/ successfully$/\e[0m&/
+	}
+	2{
+		/^meta-data=/i
+	}
+
+	/(data     |naming   |log      |realtime )=/i
+
+	/meta-data=/{
+		s@/dev/[[:graph:]]+@\e[93m&\e[0m@
+
+		s/isize=([0-9]+)/\e[90misize\e[0m=\e[36m\\1\e[0m/
+		s/agcount=([0-9]+)/\e[90magcount\e[0m=\e[94m\\1\e[0m/
+		s/agsize=([0-9]+)/\e[90magsize\e[0m=\e[93m\\1\e[0m/
+	}
+	/naming   =/{
+		s@version [[:graph:]]+@\e[34m&\e[0m@
+	}
+	/log      =/{
+		s@internal log@\e[34m&\e[0m@
+		s@/dev/[[:graph:]]+@\e[93m&\e[0m@
+	}
+	/realtime =/{
+		s@none@\e[31m&\e[0m@
+		s@/dev/[[:graph:]]+@\e[93m&\e[0m@
+	}
+
+	s/sectsz=([0-9]+)/\e[90msectsz\e[0m=\e[94m\\1\e[0m/
+
+	s/crc=0   /\e[91mcrc\e[0m=\e[91m0\e[0m \e[95mv4\e[0m/
+	s/crc=1   /\e[92mcrc\e[0m=\e[92m1\e[0m \e[95mv5\e[0m/
+
+	s/(reflink|finobt|sparse|rmapbt|bigtime|inobtcount|metadir|nrext64|exchange|parent)=0/\e[91m\\1\e[0m=\e[91m0\e[0m/g
+	s/(reflink|finobt|sparse|rmapbt|bigtime|inobtcount|metadir|nrext64|exchange|parent)=1/\e[92m\\1\e[0m=\e[92m1\e[0m/g
+
+	s/(bsize|blocks|sunit|swidth)=([0-9]+)/\e[90m\\1\e[0m=\e[93m\\2\e[0m/g
+
+	s/imaxpct=([0-9]+)/\e[90mimaxpct\e[0m=\e[36m\\1 %\e[0m/
+
+	s/ blks/ \e[93mblocks\e[0m/
+
+'
