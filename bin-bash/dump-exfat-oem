@@ -1,0 +1,59 @@
+#! /usr/bin/env bash
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+for command in 'dd' 'hexdump'
+do
+	if   ! which "${command}" > /dev/null 2>&1
+	then
+		echo -e "\e[1;31mERROR: ${command} command is not available\e[0m" > /dev/stderr
+		exit 1
+	fi
+done
+
+show_oem()
+{
+	echo '===  Main Boot Region OEM Parameters  ==='
+	dd status=none bs=512 iseek=9  count=1 if="${1}" | hexdump -v -C
+	echo '=== Backup Boot Region OEM Parameters ==='
+	dd status=none bs=512 iseek=21 count=1 if="${1}" | hexdump -v -C
+}
+
+if   (( 1 == $# ))
+then
+	if   [[ -b "${1}" ]]
+	then
+		if   (( 0 == ${EUID} ))
+		then
+			if   [[ 'exfat' == "$( blkid --output value --match-tag TYPE "${1}" )" ]]
+			then
+				show_oem "${1}"
+			else
+				echo -e "\e[1;31mERROR: Filesystem on ${1} does not identify as exFAT\e[0m" > /dev/stderr
+				exit 1
+			fi
+		else
+			echo -e '\e[33mWARN: You need to run this command as root when using a block device\e[0m' > /dev/stderr
+			exit 1
+		fi
+	elif [[ -f "${1}" ]]
+	then
+		if   [[ -r "${1}" ]]
+		then
+			show_oem "${1}"
+		else
+			echo -e "\e[1;31mERROR: ${1} is not a readable file\e[0m" > /dev/stderr
+			exit 1
+		fi
+	else
+		echo -e "\e[1;31mERROR: ${1} is not a block device or readable file\e[0m" > /dev/stderr
+		exit 1
+	fi
+else
+	echo -e "\e[1;31mERROR: One argument specifying a block device or file is needed\e[0m" > /dev/stderr
+	exit 1
+fi
