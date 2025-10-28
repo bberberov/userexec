@@ -10,6 +10,7 @@ _list-var()
 {
 	local vars=''
 	for var in \
+		'BASHOPTS' \
 		'BASH_COMPLETION_USER_DIR' \
 		'GTK2_RC_FILES' \
 		'GTK_RC_FILES' \
