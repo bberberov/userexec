@@ -95,6 +95,7 @@ then
 fi
 
 # Local /bin
-check_and_set "${HOME}/.local/bin:${HOME}/bin"
+check_and_set "${HOME}/.local/bin"
+check_and_set "${HOME}/bin"
 
 export PATH="${new_PATH}"
