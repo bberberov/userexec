@@ -6,4 +6,9 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-id "$@" | sed -e 's/ /\n/g; s/,\([0-9]\)/\n\t\1/g; s/groups=/groups:\n\t/'
+id "$@" \
+| sed -e '
+	s/ /\n/g;
+	s/,\([0-9]\)/\n\t\1/g;
+	s/groups=/groups:\n\t/
+'
