@@ -1,0 +1,22 @@
+#! /bin/sh
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+for name in "$@"
+do
+	if [ -e "${name}" ]
+	then
+		echo "=== ${name} ==="
+		rpm -qif "${name}"
+	elif filepath=`which "${name}" 2>/dev/null`
+	then
+		echo "=== ${filepath} ==="
+		rpm -qif "${filepath}"
+	else
+		echo "${name} not found"
+	fi
+done
