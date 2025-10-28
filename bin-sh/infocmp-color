@@ -1,0 +1,15 @@
+#! /bin/sh
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+infocmp "$@" \
+| sed -E -e $'
+	# Expand all options
+	s/, /,\\n\\t/g
+
+	s/([[:space:]]+)(blink|bold|colors|dim|invis|rev|ritm|rmso|rmul|sitm|smso|smul)/\\1\e[1m\\2\e[0m/g
+'
