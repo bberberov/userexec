@@ -1,0 +1,62 @@
+#! /usr/bin/env bash
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+_comp_cmd_labhub()
+{
+	local global_opt='
+		--url
+		-h --help
+	'
+	local commands='
+		emojis
+		gitignores
+		info
+		licenses
+		releases
+		release
+		size
+		stars
+		tags
+		tag
+	'
+
+	case "${COMP_CWORD}" in
+		1)
+			COMPREPLY=( $(compgen -W "${global_opt} ${commands}" -- "${COMP_WORDS[COMP_CWORD]}") )
+			return 0
+		;;
+		2)
+			case "${COMP_WORDS[1]}" in
+				-h|--help|--url)
+					return 0
+				;;
+				emojis|gitignores|info|licenses|releases|release|tags|tag)
+					COMPREPLY=( $(compgen -W "--json" -- "${COMP_WORDS[COMP_CWORD]}") )
+					return 0
+				;;
+			esac
+		;;
+		3)
+			case "${COMP_WORDS[1]}" in
+				--url)
+					COMPREPLY=( $(compgen -W "${commands}" -- "${COMP_WORDS[COMP_CWORD]}") )
+					return 0
+				;;
+			esac
+		;;
+		4)
+			case "${COMP_WORDS[3]}" in
+				emojis|gitignores|info|licenses|releases|release|tags|tag)
+					COMPREPLY=( $(compgen -W "--json" -- "${COMP_WORDS[COMP_CWORD]}") )
+					return 0
+			esac
+		;;
+	esac
+
+	return 0
+} && complete -F _comp_cmd_labhub labhub

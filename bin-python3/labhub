@@ -1,0 +1,801 @@
+#! /usr/bin/env python3
+
+import argparse
+import json
+import pprint
+import subprocess
+
+from urllib import request
+from urllib.parse import urlparse
+from urllib.parse import quote as urlquote
+
+default_ua = 'Mozilla/5.0 (Windows NT 10.0; rv:140.0) Gecko/20100101 Firefox/140.0'
+
+default_host = 'github.com'
+default_path = 'jgraph/drawio-desktop'
+
+def get_API(url, agent = default_ua):
+	req = request.Request( url )
+	req.add_header( 'User-agent', agent )
+	with request.urlopen( req ) as f:
+		response = f.read().decode()
+		return response
+
+class GenericAPI:
+	def ep_emojis(host):
+		return None
+	def ep_gitignores(host):
+		return None
+	def ep_gitignore(host):
+		return None
+	def ep_licenses(host):
+		return None
+	def ep_license(host):
+		return None
+
+	def ep_repos(host, repo):
+		return None
+
+	def ep_languages(host, repo):
+		return None
+
+	def ep_releases(host, repo):
+		return None
+	def ep_release(host, repo, tag):
+		return None
+	def ep_tags(host, repo):
+		return None
+	def ep_tag(host, repo, tag):
+		return None
+
+	def emojis(host):
+		return None
+	def gitignores(host):
+		return None
+	def licenses(host):
+		return None
+
+	def info(host, repo):
+		response = {
+			'id'             : None ,
+			'name'           : None ,
+			'homepage'       : None ,
+			'description'    : None ,
+			'topics'         : None ,
+			'license'        : None ,
+			'stars'          : None ,
+			'forks'          : None ,
+			'languages'      : None ,
+			'created'        : None ,
+			'updated'        : None ,
+			'default_branch' : None ,
+			'size'           : None ,
+		}
+		return response
+
+	def size(host, repo):
+		return None
+	def stars(host, repo):
+		return None
+	def releases(host, repo):
+		return None
+	def release(host, repo, tag):
+		return None
+	def tags(host, repo):
+		return None
+	def tag(host, repo, tag):
+		return None
+
+class GitHubLikeAPI(GenericAPI):
+	def ep_gitignores(self):
+		return get_API( self.api_ep + 'gitignore/templates' )
+	def ep_licenses(self):
+		return get_API( self.api_ep + 'licenses?per_page=100' )
+
+	def ep_repos(self, repo):
+		return get_API( self.api_ep + 'repos/' + repo )
+
+	def ep_languages(self, repo):
+		return get_API( self.api_ep + 'repos/' + repo + '/languages' )
+
+	def ep_releases(self, repo):
+		return get_API( self.api_ep + 'repos/' + repo + '/releases' )
+	def ep_release(self, repo, tag):
+		return get_API( self.api_ep + 'repos/' + repo + '/releases/tags/' + tag )
+	def ep_tags(self, repo):
+		return get_API( self.api_ep + 'repos/' + repo + '/tags' )
+
+	def gitignores(self):
+		return json.loads( self.ep_gitignores() )
+
+	def licenses(self):
+		api_response = json.loads( self.ep_licenses() )
+
+		response = []
+		for license in api_response:
+			response.append(
+				{
+					'key'  : license['key'] ,
+					'name' : license['name'] ,
+				}
+			)
+		return response
+
+	def size(self, repo):
+		api_response = json.loads( self.ep_repos(repo) )
+
+		response = {
+			'size' : api_response['size'] * 1024 ,
+		}
+		return response
+
+	def releases(self, repo):
+		api_response = json.loads( self.ep_releases(repo) )
+
+		response = []
+		for release in api_response:
+			response.append(
+				{
+					'id'     : release['id'] ,
+					'name'   : release['name'] ,
+					'tag'    : release['tag_name'] ,
+					'author' : release['author']['login'] ,
+					'commit' : release['target_commitish'] ,
+				}
+			)
+		return response
+
+	def release(self, repo, tag):
+		api_response = json.loads( self.ep_release(repo, tag) )
+
+		response = {
+			'name'   : api_response['name'] ,
+			'tag'    : api_response['tag_name'] ,
+			'author' : api_response['author']['login'] ,
+		}
+		return response
+
+	def tags(self, repo):
+		api_response = json.loads( self.ep_tags(repo) )
+
+		response = []
+		for tag in api_response:
+			response.append(
+				{
+					# 'id' : tag['id'] ,
+					'name'   : tag['name'] ,
+					'commit' : tag['commit']['sha'] ,
+				}
+			)
+		return response
+
+class GitHubAPI(GitHubLikeAPI):
+	def __init__(self, api_ep = 'https://api.github.com/'):
+		self.api_ep = api_ep
+
+	def ep_emojis(self):
+		return get_API( self.api_ep + 'emojis' )
+
+	def emojis(self):
+		api_response = json.loads( self.ep_emojis() )
+
+		response = []
+		for emo in api_response.keys():
+			char_text = api_response[emo].removesuffix('.png?v8').removeprefix('https://github.githubassets.com/images/icons/emoji/')
+			if char_text.startswith('unicode/'):
+				uni_chars = char_text.removeprefix('unicode/')
+				uni_array = uni_chars.split('-')
+
+				uni_str=str()
+				for uni_char in uni_array:
+					uni_str += chr( int(uni_char, base=16) )
+
+				response.append(
+					( emo, uni_array, uni_str )
+				)
+			else:
+				response.append(
+					( emo , char_text )
+				)
+		return response
+
+	def info(self, repo):
+		api_repo = json.loads( self.ep_repos(repo) )
+		api_lang = json.loads( self.ep_languages(repo) )
+
+		if api_repo['license'] == None:
+			license = None
+		else:
+			license = api_repo['license']['name']
+
+		response = {
+			'id'             : api_repo['id'] ,
+			'name'           : api_repo['full_name'] ,
+			'homepage'       : api_repo['homepage'] ,
+			'description'    : api_repo['description'] ,
+			'topics'         : api_repo['topics'] ,
+			'license'        : license ,
+			'stars'          : api_repo['stargazers_count'] ,
+			'forks'          : api_repo['forks_count'] ,
+			'languages'      : api_lang ,
+			'created'        : api_repo['created_at'] ,
+			'updated'        : api_repo['updated_at'] ,
+			'default_branch' : api_repo['default_branch'] ,
+			'size'           : api_repo['size'] * 1024 ,
+		}
+		return response
+
+	def stars(self, repo):
+		api_response = json.loads( self.ep_repos(repo) )
+
+		response = {
+			'stars' : api_response['stargazers_count'] ,
+		}
+		return response
+
+	# tag, only by commit reference, not name
+
+class GitLabAPI(GenericAPI):
+	def __init__(self, api_ep = 'https://gitlab.com/api/v4/'):
+		self.api_ep = api_ep
+
+	def ep_cis(self):
+		return get_API( self.api_ep + 'templates/gitlab_ci_ymls' )
+	def ep_dockerfiles(self):
+		return get_API( self.api_ep + 'templates/dockerfiles' )
+	def ep_gitignores(self):
+		return get_API( self.api_ep + 'templates/gitignores' )
+
+	def ep_licenses(self):
+		return get_API( self.api_ep + 'templates/licenses/?per_page=100' )
+
+	def ep_repos(self, repo):
+		return get_API( self.api_ep + 'projects/' + urlquote( repo, safe = '' ) + '?license=true' )
+
+	def ep_languages(self, repo):
+		return get_API( self.api_ep + 'projects/' + urlquote( repo, safe = '' ) + '/languages' )
+	def ep_statistics(self, repo):
+		return get_API( self.api_ep + 'projects/' + urlquote( repo, safe = '' ) + '/repository/health/?generate=false' )
+
+	def ep_releases(self, repo):
+		return get_API( self.api_ep + 'projects/' + urlquote( repo, safe = '' ) + '/releases' )
+	def ep_release(self, repo, tag):
+		return get_API( self.api_ep + 'projects/' + urlquote( repo, safe = '' ) + '/releases/' + tag )
+	def ep_tags(self, repo):
+		return get_API( self.api_ep + 'projects/' + urlquote( repo, safe = '' ) + '/repository/tags' )
+	def ep_tag(self, repo, tag):
+		return get_API( self.api_ep + 'projects/' + urlquote( repo, safe = '' ) + '/repository/tags/' + tag )
+
+	def gitignores(self):
+		return json.loads( self.ep_gitignores() )
+
+	def licenses(self):
+		api_response = json.loads( self.ep_licenses() )
+
+		response = []
+		for license in api_response:
+			response.append(
+				{
+					'key'  : license['key'] ,
+					'name' : license['name'] ,
+				}
+			)
+		return response
+
+	def info(self, repo):
+		api_repo = json.loads( self.ep_repos(repo) )
+		api_lang = json.loads( self.ep_languages(repo) )
+
+		if api_repo['license'] == None:
+			license = None
+		else:
+			license = api_repo['license']['name']
+
+		response = {
+			'id'             : api_repo['id'] ,
+			'name'           : api_repo['name'] ,
+			'homepage'       : 'N/A' ,
+			'description'    : api_repo['description'] ,
+			'topics'         : api_repo['topics'] ,
+			'license'        : license ,
+			'stars'          : api_repo['star_count'] ,
+			'forks'          : api_repo['forks_count'] ,
+			'languages'      : api_lang ,
+			'created'        : api_repo['created_at'] ,
+			'updated'        : api_repo['last_activity_at'] ,
+			'default_branch' : api_repo['default_branch'] ,
+			'size'           : 'Authentication Required' ,
+		}
+		return response
+
+	def stars(self, repo):
+		api_response = json.loads( self.ep_repos(repo) )
+
+		response = {
+			'stars' : api_response['star_count'] ,
+		}
+		return response
+
+	def releases(self, repo):
+		api_response = json.loads( self.ep_releases(repo) )
+
+		response = []
+		for release in api_response:
+			response.append(
+				{
+					'name' : release['name'] ,
+					'tag'  : release['tag_name'] ,
+				}
+			)
+		return response
+
+	def release(self, repo, tag):
+		api_response = json.loads( self.ep_release(repo, tag) )
+
+		response = {
+			'name' : api_response['name'] ,
+			'tag'  : api_response['tag_name'] ,
+		}
+		return response
+
+	def tags(self, repo):
+		api_response = json.loads( self.ep_tags(repo) )
+
+		response = []
+		for tag in api_response:
+			response.append(
+				{
+					'name' : tag['name'] ,
+				}
+			)
+		return response
+
+	def tag(self, repo, tag):
+		api_response = json.loads( self.ep_tag(repo, tag) )
+
+		response = {
+			'name'    : api_response['name'] ,
+			'message' : api_response['message'] ,
+		}
+		return response
+
+class GiteaLikeAPI(GitHubLikeAPI):
+	def ep_tag(self, repo, tag):
+		return get_API( self.api_ep + 'repos/' + repo + '/tags/' + tag )
+
+	def stars(self, repo):
+		api_response = json.loads( self.ep_repos(repo) )
+
+		response = {
+			'stars' : api_repo['stars_count'] ,
+		}
+		return response
+
+	def tag(self, repo, tag):
+		api_response = json.loads( self.ep_tag(repo, tag) )
+
+		response = {
+			'name'    : api_response['name'] ,
+			'message' : api_response['message'] ,
+		}
+		return response
+
+class ForgejoAPI(GiteaLikeAPI):
+	def __init__(self, api_ep = 'https://codeberg.org/api/v1/'):
+		self.api_ep = api_ep
+
+	def info(self, repo):
+		api_repo = json.loads( self.ep_repos(repo) )
+		api_lang = json.loads( self.ep_languages(repo) )
+
+		response = {
+			'id'             : api_repo['id'] ,
+			'name'           : api_repo['full_name'] ,
+			'homepage'       : api_repo['website'] ,
+			'description'    : api_repo['description'] ,
+			'topics'         : api_repo['topics'] ,
+			'license'        : 'N/A' ,
+			'stars'          : api_repo['stars_count'] ,
+			'forks'          : api_repo['forks_count'] ,
+			'languages'      : api_lang ,
+			'created'        : api_repo['created_at'] ,
+			'updated'        : api_repo['updated_at'] ,
+			'default_branch' : api_repo['default_branch'] ,
+			'size'           : api_repo['size'] * 1024 ,
+		}
+		return response
+
+class GiteaAPI(GiteaLikeAPI):
+	def __init__(self, api_ep = 'https://src.opensuse.org/api/v1/'):
+		self.api_ep = api_ep
+
+	def info(self, repo):
+		api_repo = json.loads( self.ep_repos(repo) )
+		api_lang = json.loads( self.ep_languages(repo) )
+
+		response = {
+			'id'             : api_repo['id'] ,
+			'name'           : api_repo['full_name'] ,
+			'homepage'       : api_repo['website'] ,
+			'description'    : api_repo['description'] ,
+			'topics'         : api_repo['topics'] ,
+			'license'        : api_repo['licenses'] ,
+			'stars'          : api_repo['stars_count'] ,
+			'forks'          : api_repo['forks_count'] ,
+			'languages'      : api_lang ,
+			'created'        : api_repo['created_at'] ,
+			'updated'        : api_repo['updated_at'] ,
+			'default_branch' : api_repo['default_branch'] ,
+			'size'           : api_repo['size'] * 1024 ,
+		}
+		return response
+
+class SourceForgeAPI(GenericAPI):
+	def __init__(self, api_ep = 'https://sourceforge.net/rest/'):
+		self.api_ep = api_ep
+
+	def ep_repos(self, repo):
+		# NOTE: '/p/' or '/u/' is part of the path
+		return get_API( self.api_ep + repo )
+
+	def ep_releases(self, repo):
+		# NOTE: '/p/' or '/u/' is part of the path
+		return get_API( self.api_ep + repo + '/files' )
+
+	def info(self, repo):
+		api_repo = json.loads( self.ep_repos(repo) )
+
+		licenses = []
+		languages = []
+		topics = []
+		for category in api_repo['categories']:
+			if 0 < len(category):
+				match category:
+					case 'license':
+						for licence in api_repo['categories']['license']:
+							licenses.append(licence['fullname'])
+					case 'language':
+						for language in api_repo['categories']['language']:
+							languages.append( ( language['fullname'], 0 ) )
+					case 'topic':
+						for topic in api_repo['categories']['topic']:
+							topics.append( topic['fullname'] )
+
+		topics += api_repo['labels']
+
+		response = {
+			'id'             : api_repo['_id'] ,
+			'name'           : api_repo['name'] ,
+			'homepage'       : api_repo['external_homepage'] ,
+			'description'    : api_repo['summary'] ,
+			'topics'         : topics ,
+			'license'        : licenses ,
+			'stars'          : 'N/A' ,
+			'forks'          : 'N/A' ,
+			'languages'      : languages ,
+			'created'        : api_repo['creation_date'] ,
+			'updated'        : 'N/A' ,
+			'default_branch' : 'N/A' ,
+			'size'           : 'N/A' ,
+		}
+		return response
+
+class GerritAPI(GenericAPI):
+	def __init__(self, api_ep = 'https://code-review.googlesource.com/'):
+		self.api_ep = api_ep
+
+	def ep_repos(self, repo):
+		return get_API( self.api_ep + 'projects/' + urlquote( repo, safe = '' ) + '/?d' )[5:]
+
+	# def ep_statistics(self, repo):
+	# 	return get_API( self.api_ep + 'projects/' + urlquote( repo, safe = '' ) + '/statistics.git' )[5:]
+
+	def info(self, repo):
+		api_repo = json.loads( self.ep_repos(repo) )
+		# api_stat = json.loads( self.ep_statistics(repo) )
+
+		if 'description' in api_repo:
+			description = api_repo['description']
+		else:
+			description = None
+
+		response = {
+			'id'             : api_repo['id'] ,
+			'name'           : api_repo['name'] ,
+			'homepage'       : 'N/A' ,
+			'description'    : description ,
+			'topics'         : 'N/A' ,
+			'license'        : 'N/A' ,
+			'stars'          : 'N/A' ,
+			'forks'          : 'N/A' ,
+			'languages'      : 'N/A' ,
+			'created'        : 'N/A' ,
+			'updated'        : 'N/A' ,
+			'default_branch' : 'N/A' ,
+			'size'           : 'N/A' ,
+			# 'size'           : api_stat ,
+		}
+		return response
+
+APIs = {
+	'codeberg.org'                      : ForgejoAPI() ,
+	'sourceforge.net'                   : SourceForgeAPI() ,
+	'github.com'                        : GitHubAPI() ,
+
+	'code.googlesource.com'             : GerritAPI( api_ep = 'https://code-review.googlesource.com/' ) ,
+	'chromium.googlesource.com'         : GerritAPI( api_ep = 'https://chromium-review.googlesource.com/' ) ,
+
+	'src.opensuse.org'                  : GiteaAPI( api_ep = 'https://src.opensuse.org/api/v1/' ) ,
+
+	'gitlab.com'                        : GitLabAPI() ,
+	'framagit.org'                      : GitLabAPI( api_ep = 'https://framagit.org/api/v4/' ) ,
+	'git.adelielinux.org'               : GitLabAPI( api_ep = 'https://git.adelielinux.org/api/v4/' ) ,
+	'git.jami.net'                      : GitLabAPI( api_ep = 'https://git.jami.net/api/v4/' ) ,
+	'gitlab.archlinux.org'              : GitLabAPI( api_ep = 'https://gitlab.archlinux.org/api/v4/' ) ,
+	'gitlab.freedesktop.org'            : GitLabAPI( api_ep = 'https://gitlab.freedesktop.org/api/v4/' ) ,
+	'gitlab.gnome.org'                  : GitLabAPI( api_ep = 'https://gitlab.gnome.org/api/v4/' ) ,
+	'invent.kde.org'                    : GitLabAPI( api_ep = 'https://invent.kde.org/api/v4/' ) ,
+	'ohwr.org'                          : GitLabAPI( api_ep = 'https://ohwr.org/api/v4/' ) ,
+	'salsa.debian.org'                  : GitLabAPI( api_ep = 'https://salsa.debian.org/api/v4/' ) ,
+	'source.puri.sm'                    : GitLabAPI( api_ep = 'https://source.puri.sm/api/v4/' ) ,
+}
+
+gitURL = {
+	'ftp://codeberg.org/'               : APIs['codeberg.org'] ,
+	'ftps://codeberg.org/'              : APIs['codeberg.org'] ,
+	'git://codeberg.org/'               : APIs['codeberg.org'] ,
+	'git@codeberg.org:'                 : APIs['codeberg.org'] ,
+	'http://codeberg.org/'              : APIs['codeberg.org'] ,
+	'https://codeberg.org/'             : APIs['codeberg.org'] ,
+	'ssh://codeberg.org/'               : APIs['codeberg.org'] ,
+
+	'ftp://git.code.sf.net/'            : APIs['sourceforge.net'] ,
+	'ftps://git.code.sf.net/'           : APIs['sourceforge.net'] ,
+	'git://git.code.sf.net/'            : APIs['sourceforge.net'] ,
+	'git@git.code.sf.net:'              : APIs['sourceforge.net'] ,
+	'http://git.code.sf.net/'           : APIs['sourceforge.net'] ,
+	'https://git.code.sf.net/'          : APIs['sourceforge.net'] ,
+	'ssh://git.code.sf.net/'            : APIs['sourceforge.net'] ,
+
+	'ftp://github.com/'                 : APIs['github.com'] ,
+	'ftps://github.com/'                : APIs['github.com'] ,
+	'git://github.com/'                 : APIs['github.com'] ,
+	'git@github.com:'                   : APIs['github.com'] ,
+	'http://github.com/'                : APIs['github.com'] ,
+	'https://github.com/'               : APIs['github.com'] ,
+	'ssh://github.com/'                 : APIs['github.com'] ,
+
+	'ftp://src.opensuse.org/'           : APIs['src.opensuse.org'] ,
+	'ftps://src.opensuse.org/'          : APIs['src.opensuse.org'] ,
+	'git://src.opensuse.org/'           : APIs['src.opensuse.org'] ,
+	'git@src.opensuse.org:'             : APIs['src.opensuse.org'] ,
+	'http://src.opensuse.org/'          : APIs['src.opensuse.org'] ,
+	'https://src.opensuse.org/'         : APIs['src.opensuse.org'] ,
+	'ssh://src.opensuse.org/'           : APIs['src.opensuse.org'] ,
+
+	'ftp://gitlab.com/'                 : APIs['gitlab.com'] ,
+	'ftps://gitlab.com/'                : APIs['gitlab.com'] ,
+	'git://gitlab.com/'                 : APIs['gitlab.com'] ,
+	'git@gitlab.com:'                   : APIs['gitlab.com'] ,
+	'http://gitlab.com/'                : APIs['gitlab.com'] ,
+	'https://gitlab.com/'               : APIs['gitlab.com'] ,
+	'ssh://gitlab.com/'                 : APIs['gitlab.com'] ,
+
+	'ftp://framagit.org/'               : APIs['framagit.org'] ,
+	'ftps://framagit.org/'              : APIs['framagit.org'] ,
+	'git://framagit.org/'               : APIs['framagit.org'] ,
+	'git@framagit.org:'                 : APIs['framagit.org'] ,
+	'http://framagit.org/'              : APIs['framagit.org'] ,
+	'https://framagit.org/'             : APIs['framagit.org'] ,
+	'ssh://framagit.org/'               : APIs['framagit.org'] ,
+
+	'ftp://git.adelielinux.org/'        : APIs['git.adelielinux.org'] ,
+	'ftps://git.adelielinux.org/'       : APIs['git.adelielinux.org'] ,
+	'git://git.adelielinux.org/'        : APIs['git.adelielinux.org'] ,
+	'git@git.adelielinux.org:'          : APIs['git.adelielinux.org'] ,
+	'http://git.adelielinux.org/'       : APIs['git.adelielinux.org'] ,
+	'https://git.adelielinux.org/'      : APIs['git.adelielinux.org'] ,
+	'ssh://git.adelielinux.org/'        : APIs['git.adelielinux.org'] ,
+
+	'ftp://git.jami.net/'               : APIs['git.jami.net'] ,
+	'ftps://git.jami.net/'              : APIs['git.jami.net'] ,
+	'git://git.jami.net/'               : APIs['git.jami.net'] ,
+	'git@git.jami.net:'                 : APIs['git.jami.net'] ,
+	'http://git.jami.net/'              : APIs['git.jami.net'] ,
+	'https://git.jami.net/'             : APIs['git.jami.net'] ,
+	'ssh://git.jami.net/'               : APIs['git.jami.net'] ,
+
+	'ftp://gitlab.archlinux.org/'       : APIs['gitlab.archlinux.org'] ,
+	'ftps://gitlab.archlinux.org/'      : APIs['gitlab.archlinux.org'] ,
+	'git://gitlab.archlinux.org/'       : APIs['gitlab.archlinux.org'] ,
+	'git@gitlab.archlinux.org:'         : APIs['gitlab.archlinux.org'] ,
+	'http://gitlab.archlinux.org/'      : APIs['gitlab.archlinux.org'] ,
+	'https://gitlab.archlinux.org/'     : APIs['gitlab.archlinux.org'] ,
+	'ssh://gitlab.archlinux.org/'       : APIs['gitlab.archlinux.org'] ,
+
+	'ftp://gitlab.freedesktop.org/'     : APIs['gitlab.freedesktop.org'] ,
+	'ftps://gitlab.freedesktop.org/'    : APIs['gitlab.freedesktop.org'] ,
+	'git://gitlab.freedesktop.org/'     : APIs['gitlab.freedesktop.org'] ,
+	'git@gitlab.freedesktop.org:'       : APIs['gitlab.freedesktop.org'] ,
+	'http://gitlab.freedesktop.org/'    : APIs['gitlab.freedesktop.org'] ,
+	'https://gitlab.freedesktop.org/'   : APIs['gitlab.freedesktop.org'] ,
+	'ssh://gitlab.freedesktop.org/'     : APIs['gitlab.freedesktop.org'] ,
+
+	'ftp://gitlab.gnome.org/'           : APIs['gitlab.gnome.org'] ,
+	'ftps://gitlab.gnome.org/'          : APIs['gitlab.gnome.org'] ,
+	'git://gitlab.gnome.org/'           : APIs['gitlab.gnome.org'] ,
+	'git@gitlab.gnome.org:'             : APIs['gitlab.gnome.org'] ,
+	'http://gitlab.gnome.org/'          : APIs['gitlab.gnome.org'] ,
+	'https://gitlab.gnome.org/'         : APIs['gitlab.gnome.org'] ,
+	'ssh://gitlab.gnome.org/'           : APIs['gitlab.gnome.org'] ,
+
+	'ftp://invent.kde.org/'             : APIs['invent.kde.org'] ,
+	'ftps://invent.kde.org/'            : APIs['invent.kde.org'] ,
+	'git://invent.kde.org/'             : APIs['invent.kde.org'] ,
+	'git@invent.kde.org:'               : APIs['invent.kde.org'] ,
+	'http://invent.kde.org/'            : APIs['invent.kde.org'] ,
+	'https://invent.kde.org/'           : APIs['invent.kde.org'] ,
+	'ssh://invent.kde.org/'             : APIs['invent.kde.org'] ,
+
+	'ftp://ohwr.org/'                   : APIs['ohwr.org'] ,
+	'ftps://ohwr.org/'                  : APIs['ohwr.org'] ,
+	'git://ohwr.org/'                   : APIs['ohwr.org'] ,
+	'git@ohwr.org:'                     : APIs['ohwr.org'] ,
+	'http://ohwr.org/'                  : APIs['ohwr.org'] ,
+	'https://ohwr.org/'                 : APIs['ohwr.org'] ,
+	'ssh://ohwr.org/'                   : APIs['ohwr.org'] ,
+
+	'ftp://salsa.debian.org/'           : APIs['salsa.debian.org'] ,
+	'ftps://salsa.debian.org/'          : APIs['salsa.debian.org'] ,
+	'git://salsa.debian.org/'           : APIs['salsa.debian.org'] ,
+	'git@salsa.debian.org:'             : APIs['salsa.debian.org'] ,
+	'http://salsa.debian.org/'          : APIs['salsa.debian.org'] ,
+	'https://salsa.debian.org/'         : APIs['salsa.debian.org'] ,
+	'ssh://salsa.debian.org/'           : APIs['salsa.debian.org'] ,
+
+	'ftp://source.puri.sm/'             : APIs['source.puri.sm'] ,
+	'ftps://source.puri.sm/'            : APIs['source.puri.sm'] ,
+	'git://source.puri.sm/'             : APIs['source.puri.sm'] ,
+	'git@source.puri.sm:'               : APIs['source.puri.sm'] ,
+	'http://source.puri.sm/'            : APIs['source.puri.sm'] ,
+	'https://source.puri.sm/'           : APIs['source.puri.sm'] ,
+	'ssh://source.puri.sm/'             : APIs['source.puri.sm'] ,
+}
+
+if '__main__' == __name__:
+	# BEGIN argument parser
+	parser = argparse.ArgumentParser(
+		description='Access unauthenticated source forge host APIs' ,
+		epilog='Known hosts: ' + ', '.join(APIs) ,
+	)
+
+	cmd = parser.add_subparsers(
+		title='Command',
+		required=True
+	)
+	parser.add_argument(
+		'--url' ,
+		help='Specify the "web" URL of the repository manually, or when not inside a repo or tree folder'
+	)
+
+	cmd_emojis    = cmd.add_parser('emojis')
+	cmd_emojis.set_defaults(   cmd='emojis')
+	cmd_emojis.add_argument('--json', action='store_true')
+
+	cmd_gitignores    = cmd.add_parser('gitignores')
+	cmd_gitignores.set_defaults(   cmd='gitignores')
+	cmd_gitignores.add_argument('--json', action='store_true')
+
+	cmd_info     = cmd.add_parser('info')
+	cmd_info.set_defaults(    cmd='info')
+	cmd_info.add_argument('--json', action='store_true')
+
+	cmd_licenses    = cmd.add_parser('licenses')
+	cmd_licenses.set_defaults(   cmd='licenses')
+	cmd_licenses.add_argument('--json', action='store_true')
+
+	cmd_releases = cmd.add_parser('releases')
+	cmd_releases.set_defaults(cmd='releases')
+	cmd_releases.add_argument('--json', action='store_true')
+
+	cmd_release = cmd.add_parser('release')
+	cmd_release.set_defaults(cmd='release')
+	cmd_release.add_argument('--json', action='store_true')
+	cmd_release.add_argument('release')
+
+	cmd_size    = cmd.add_parser('size')
+	cmd_size.set_defaults(   cmd='size')
+
+	cmd_stars    = cmd.add_parser('stars')
+	cmd_stars.set_defaults(   cmd='stars')
+
+	cmd_tags     = cmd.add_parser('tags')
+	cmd_tags.set_defaults(    cmd='tags')
+	cmd_tags.add_argument('--json', action='store_true')
+
+	cmd_tag     = cmd.add_parser('tag')
+	cmd_tag.set_defaults(    cmd='tag')
+	cmd_tag.add_argument('--json', action='store_true')
+	cmd_tag.add_argument('tag')
+
+	parser.parse_args()
+
+	args = parser.parse_args()
+	# END   argument parser
+
+	if args.url:
+		URL = urlparse(args.url)
+
+		for host in APIs.keys():
+			if host == URL.hostname:
+				API = APIs[host]
+				path = URL.path.strip('/')
+				break
+		else:
+			print( 'URL not supported' )
+			exit(1)
+	else:
+		check_repo = subprocess.run( [ 'git', 'remote', 'get-url', 'origin' ], capture_output=True )
+		if 0 == check_repo.returncode:
+			repo_str = check_repo.stdout.decode()
+
+			for prefix in gitURL.keys():
+				if repo_str.startswith(prefix):
+					API = gitURL[prefix]
+					path = repo_str.removeprefix(prefix).removesuffix(".git\n")
+					break
+			else:
+				print( 'git URL ' + repo_str + ' not supported' )
+				exit(1)
+
+		else:
+			print( 'URL not specified and not invoked inside a repo' )
+			print( 'Using built-in default: ' + default_host + '/' + default_path   )
+			API = APIs[default_host]
+			path = default_path
+
+	match args.cmd:
+		case 'emojis':
+			if args.json:
+				print( API.ep_emojis() )
+			else:
+				pprint.pp( API.emojis() )
+		case 'gitignores':
+			if args.json:
+				print( API.ep_gitignores() )
+			else:
+				pprint.pp( API.gitignores() )
+		case 'info':
+			if args.json:
+				print( API.ep_repos(path) )
+			else:
+				pprint.pp( API.info(path) )
+		case 'licenses':
+			if args.json:
+				print( API.ep_licenses() )
+			else:
+				pprint.pp( API.licenses() )
+		case 'releases':
+			if args.json:
+				print( API.ep_releases(path) )
+			else:
+				pprint.pp( API.releases(path) )
+		case 'release':
+			if args.json:
+				print( API.ep_release(path, args.release) )
+			else:
+				pprint.pp( API.release(path, args.release) )
+		case 'size':
+			pprint.pp( API.size(path) )
+		case 'stars':
+			pprint.pp( API.stars(path) )
+		case 'tags':
+			if args.json:
+				print( API.ep_tags(path) )
+			else:
+				pprint.pp( API.tags(path) )
+		case 'tag':
+			if args.json:
+				print( API.ep_tag(path, args.tag) )
+			else:
+				pprint.pp( API.tag(path, args.tag) )
