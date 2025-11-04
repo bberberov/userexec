@@ -8,15 +8,23 @@
 
 for name in "$@"
 do
-	if [ -e "${name}" ]
+	if   [ -e "${name}" ]
 	then
-		echo "=== ${name} ==="
+		if   [ 1 -lt $# ]
+		then
+			echo "=== ${name} ==="
+		fi
+
 		rpm -qif "${name}"
-	elif filepath=`which "${name}" 2>/dev/null`
+	elif filepath=$(which "${name}" 2>/dev/null)
 	then
-		echo "=== ${filepath} ==="
+		if   [ 1 -lt $# ]
+		then
+			echo "=== ${filepath} ==="
+		fi
+
 		rpm -qif "${filepath}"
 	else
-		echo "${name} not found"
+		echo "${name} not found" > /dev/stderr
 	fi
 done

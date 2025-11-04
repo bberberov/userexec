@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright © 2024 Boian Berberov
+# Copyright © 2024, 2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -8,15 +8,23 @@
 
 for name in "$@"
 do
-	if [ -e "${name}" ]
+	if   [ -e "${name}" ]
 	then
-		echo "== ${name} =="
-		rpm -qfl "${name}"
-	elif filepath=`which "${name}" 2>/dev/null`
+		if   [ 1 -lt $# ]
+		then
+			echo "=== ${name} ==="
+		fi
+
+		rpm -qlf "${name}"
+	elif filepath=$(which "${name}" 2>/dev/null)
 	then
-		echo "== ${filepath} =="
-		rpm -qfl "${filepath}"
+		if   [ 1 -lt $# ]
+		then
+			echo "=== ${filepath} ==="
+		fi
+
+		rpm -qlf "${filepath}"
 	else
-		echo "${name} not found"
+		echo "${name} not found" > /dev/stderr
 	fi
 done
