@@ -6,7 +6,7 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-_list-var()
+_comp_cmd_list-var()
 {
 	local vars=''
 	for var in \
@@ -19,7 +19,7 @@ _list-var()
 		'PATH' \
 		'XDG_CONFIG_DIRS' \
 		'XDG_DATA_DIRS' \
-		;
+	;
 	do
 		[[ -n "${!var}" ]] && vars+=" ${var}"
 	done
@@ -32,6 +32,4 @@ _list-var()
 	esac
 
 	return 0
-}
-
-complete -F _list-var list-var
+} && complete -F _comp_cmd_list-var list-var
