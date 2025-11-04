@@ -1,0 +1,34 @@
+#! /usr/bin/env bash
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+dir="${1:-.}"
+
+user_mirror_file="${XDG_CONFIG_DIR:-${HOME}/.config}/user_mirrors/Ubuntu_releases"
+# shellcheck disable=SC2162
+[[ -r "${user_mirror_file}" ]] && read user_mirror < "${user_mirror_file}"
+
+mirror="${2:-${user_mirror:-https://releases.ubuntu.com}}"
+
+dll=''
+for ver in '24.04' '25.10'
+do
+	dll+=" ${mirror}/${ver}/"
+done
+
+# shellcheck disable=SC2086
+wget -r -l 3 -np -N -e robots=off \
+	-P "${dir}/Ubuntu" \
+	-nH \
+	--reject-regex 'C=|/netboot/|-netboot-|-wsl-' \
+	-R '*.html' \
+	-R '*.html.tmp' \
+	-R '*.list' \
+	-R '*.manifest' \
+	-R '*.iso.torrent' \
+	-R '*.iso.zsync' \
+	${dll}

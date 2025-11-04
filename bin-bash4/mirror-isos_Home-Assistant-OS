@@ -1,0 +1,51 @@
+#! /usr/bin/env bash
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+for command in 'curl' 'grep' 'jq'
+do
+	if   ! which "${command}" > /dev/null 2>&1
+	then
+		echo -e "\e[1;31mERROR: ${command} command is not available\e[0m" > /dev/stderr
+		exit 1
+	fi
+done
+
+dir="${1:-.}"
+fulldir="${dir}/Home-Assistant-OS"
+
+project='home-assistant/operating-system'
+
+request=$(curl --silent "https://api.github.com/repos/${project}/releases/latest")
+ver=$(jq '.tag_name' <<< "${request}" | tr -d '"')
+
+echo -e "\nLatest release: ${ver}\n"
+
+readarray -t lines < <(jq '.assets.[] | .digest, .browser_download_url' <<< "${request}" | tr -d '"' | sed -n -e '/^sha256/{s/^sha256://; N; s/\n/\t/; p}')
+
+for line in "${lines[@]}"
+do
+	digest="${line%$'\t'*}"
+	url="${line#*$'\t'}"
+	filename="${url#https://github.com/"${project}"/releases/download/"${ver}"/}"
+
+	if   [[ "${filename}" =~ haos_ova-${ver}\.qcow2|((haos_rpi3|haos_rpi3-64)-${ver}.img) ]]
+	then
+		digestname="${fulldir}/${ver}/${filename}.sha256"
+		if   [[ ! -f "${digestname}" ]]
+		then
+			mkdir -p "${fulldir}/${ver}"
+			echo "${digest}  ${filename}" > "${digestname}"
+		fi
+		dll+=" ${url}"
+	fi
+done
+
+# shellcheck disable=SC2086
+wget -N \
+	-P "${fulldir}/${ver}" \
+	${dll}

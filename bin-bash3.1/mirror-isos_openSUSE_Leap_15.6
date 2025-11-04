@@ -1,0 +1,27 @@
+#! /usr/bin/env bash
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+dir="${1:-.}"
+
+user_mirror_file="${XDG_CONFIG_DIR:-${HOME}/.config}/user_mirrors/openSUSE_Leap_15.6"
+# shellcheck disable=SC2162
+[[ -r "${user_mirror_file}" ]] && read user_mirror < "${user_mirror_file}"
+
+mirror="${2:-${user_mirror:-https://download.opensuse.org}}"
+
+dll="${mirror}/distribution/leap/15.6/iso/"
+
+# shellcheck disable=SC2086
+wget -r -l 1 -np -N -e robots=off \
+	-P "${dir}/openSUSE/Leap/15.6" \
+	-nd \
+	--reject-regex 'C=|/Changes\.|-Current.iso|-x86_64-Media\.iso|-aarch64-|-ppc64le-|-s390x-' \
+	-R '*.html' \
+	-R '*.html.tmp' \
+	-R '*.mirrorlist' \
+	${dll}
