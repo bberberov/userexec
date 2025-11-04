@@ -16,26 +16,45 @@ sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
 
 if   (( "${sdk}" < 23 ))
 then
-	echo '\
+	echo "\
 INFO: Cannot list settings on Android 5.1 and older devices
-INFO: Showing some known settings'\
-		 > /dev/stderr
+INFO: Showing some known settings" \
+		> /dev/stderr
 
 	echo 'System:'
 		# Unavailable
 		# 'alarm_set'
+		# 'com_android_contacts_unread'
 		# 'notification_set'
 		# 'ringtone_set'
+		# 'screenshot_button_show'
+		# 'screenshot_location'
 	for i in \
+		'accelerometer_rotation' \
 		'alarm_alert' \
+		'date_format' \
+		'dim_screen' \
+		'dtmf_tone' \
+		'dtmf_tone_type' \
 		'haptic_feedback_enabled' \
+		'hearing_aid' \
+		'hide_rotation_lock_toggle_for_accessibility' \
 		'lockscreen_sounds_enabled' \
+		'mode_ringer_streams_affected' \
+		'mute_streams_affected' \
 		'notification_light_pulse' \
 		'notification_sound' \
 		'pointer_speed' \
 		'ringtone' \
 		'screen_brightness' \
 		'screen_brightness_mode' \
+		'screen_off_timeout' \
+		'sound_effects_enabled' \
+		'status_bar_show_battery_percent' \
+		'time_12_24' \
+		'transition_animation_scale' \
+		'tty_mode' \
+		'user_rotation' \
 		'vibrate_when_ringing' \
 		'volume_alarm' \
 		'volume_bluetooth_sco' \
@@ -44,37 +63,143 @@ INFO: Showing some known settings'\
 		'volume_ring' \
 		'volume_system' \
 		'volume_voice' \
-
+		'window_animation_scale' \
+	;
 	do
 		echo $'\t'"${i}: `adb shell settings get system ${i}`"
 	done
 
 	echo 'Secure:'
+		# Unavailable
+		# 'assistant'
+		# 'double_tap_to_wake'
+		# 'package_verifier_user_consent'
+		# 'volume_controller_service_component
 	for i in \
+		'accessibility_display_magnification_auto_update' \
+		'accessibility_display_magnification_enabled' \
+		'accessibility_display_magnification_scale' \
+		'accessibility_script_injection' \
+		'accessibility_script_injection_url' \
+		'accessibility_web_content_key_bindings' \
+		'allowed_geolocation_origins' \
 		'android_id' \
+		'backup_enabled' \
+		'backup_transport' \
+		'bluetooth_addr_valid' \
 		'bluetooth_address' \
 		'bluetooth_name' \
 		'default_input_method' \
 		'enabled_input_methods' \
+		'enabled_notification_listeners' \
+		'enabled_on_first_boot_system_print_services' \
+		'enabled_print_services' \
+		'input_methods_subtype_history' \
+		'install_non_market_apps' \
+		'last_setup_shown' \
+		'location_providers_allowed' \
+		'lock_screen_allow_private_notifications' \
+		'lock_screen_owner_info_enabled' \
+		'lock_screen_show_notifications' \
+		'lockscreen.disabled' \
+		'long_press_timeout' \
 		'mock_location' \
+		'mount_play_not_snd' \
+		'mount_ums_autostart' \
+		'mount_ums_notify_enabled' \
+		'mount_ums_prompt' \
+		'screensaver_activate_on_dock' \
+		'screensaver_activate_on_sleep' \
+		'screensaver_components' \
+		'screensaver_default_component' \
+		'screensaver_enabled' \
+		'selected_input_method_subtype' \
+		'selected_spell_checker' \
+		'selected_spell_checker_subtype' \
+		'show_note_about_notification_hiding' \
+		'sleep_timeout' \
 		'sms_default_application' \
-
+		'speak_password' \
+		'touch_exploration_enabled' \
+		'trust_agents_initialized' \
+		'user_setup_complete' \
+		'voice_interaction_service' \
+		'voice_recognition_service' \
+		'wake_gesture_enabled' \
+	;
 	do
 		echo $'\t'"${i}: `adb shell settings get secure ${i}`"
 	done
+
 	echo 'Global:'
 		# Unavailable
+		# 'animator_duration_scale'
+		# 'ble_scan_always_enabled'
+		# 'connectivity_sampling_interval_in_seconds'
+		# 'data_intelligent_sleep'
+		# 'debug_app'
+		# 'install_non_market_apps'
+		# 'overlay_display_devices'
+		# 'theater_mode_on'
+		# 'transition_animation_scale'
+		# 'volte_vt_enabled'
+		# 'wait_for_debugger'
 		# 'webview_provider'
+		# 'window_animation_scale'
 	for i in \
 		'adb_enabled' \
 		'airplane_mode_on' \
+		'airplane_mode_radios' \
+		'airplane_mode_toggleable_radios' \
 		'assisted_gps_enabled' \
+		'audio_safe_volume_state' \
+		'auto_time' \
+		'auto_time_zone' \
 		'bluetooth_on' \
+		'bugreport_in_power_menu' \
+		'call_auto_retry' \
+		'captive_portal_detection_enabled' \
+		'car_dock_sound' \
+		'car_undock_sound' \
+		'cdma_cell_broadcast_sms' \
+		'data_roaming' \
+		'default_install_location' \
+		'desk_dock_sound' \
+		'desk_undock_sound' \
+		'development_settings_enabled' \
 		'device_name' \
-		'install_non_market_apps' \
+		'device_provisioned' \
+		'dock_audio_media_enabled' \
+		'dock_sounds_enabled' \
+		'emergency_tone' \
+		'guest_user_enabled' \
+		'heads_up_notifications_enabled' \
+		'lock_sound' \
+		'low_battery_sound' \
+		'low_battery_sound_timeout' \
+		'mobile_data' \
+		'mode_ringer' \
+		'netstats_enabled' \
+		'network_scoring_provisioned' \
+		'package_verifier_enable' \
+		'power_sounds_enabled' \
+		'preferred_network_mode' \
+		'require_password_to_decrypt' \
+		'set_install_location' \
+		'stay_on_while_plugged_in' \
+		'subscription_mode' \
+		'trusted_sound' \
+		'unlock_sound' \
 		'usb_mass_storage_enabled' \
+		'wifi_display_on' \
+		'wifi_max_dhcp_retry_count' \
+		'wifi_networks_available_notification_on' \
 		'wifi_on' \
-
+		'wifi_scan_always_enabled' \
+		'wifi_sleep_policy' \
+		'wifi_watchdog_on' \
+		'wireless_charging_started_sound' \
+	;
 	do
 		echo $'\t'"${i}: `adb shell settings get global ${i}`"
 	done
