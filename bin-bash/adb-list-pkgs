@@ -52,7 +52,7 @@ do
 			exit 0
 		;;
 		*)
-			echo "\
+			echo -e "\
 \e[1;31mERROR: Unknown option: ${opt}\e[0m
 
 Use --help to see the available options"\
@@ -62,15 +62,15 @@ Use --help to see the available options"\
 	esac
 done
 
-if   [[ "`adb get-state`" != 'device' ]]
+if   [[ "$(adb get-state)" != 'device' ]]
 then
 	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1
 fi
 
-sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
+sdk="$(adb shell 'getprop ro.build.version.sdk' | tr -d '\r')"
 
-if   (( "${sdk}" < 24 || 29 < "${sdk}" ))
+if   (( sdk < 24 || 29 < sdk ))
 then
 	command='pm'
 else

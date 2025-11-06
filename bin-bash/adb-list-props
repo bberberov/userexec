@@ -6,7 +6,7 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-if   [[ "`adb get-state`" != 'device' ]]
+if   [[ "$(adb get-state)" != 'device' ]]
 then
 	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1

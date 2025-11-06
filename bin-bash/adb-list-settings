@@ -6,15 +6,15 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-if   [[ "`adb get-state`" != 'device' ]]
+if   [[ "$(adb get-state)" != 'device' ]]
 then
 	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1
 fi
 
-sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
+sdk="$(adb shell 'getprop ro.build.version.sdk' | tr -d '\r')"
 
-if   (( "${sdk}" < 23 ))
+if   (( sdk < 23 ))
 then
 	echo "\
 INFO: Cannot list settings on Android 5.1 and older devices
@@ -66,7 +66,7 @@ INFO: Showing some known settings" \
 		'window_animation_scale' \
 	;
 	do
-		echo $'\t'"${i}: `adb shell settings get system ${i}`"
+		echo $'\t'"${i}: $(adb shell settings get system ${i})"
 	done
 
 	echo 'Secure:'
@@ -128,7 +128,7 @@ INFO: Showing some known settings" \
 		'wake_gesture_enabled' \
 	;
 	do
-		echo $'\t'"${i}: `adb shell settings get secure ${i}`"
+		echo $'\t'"${i}: $(adb shell settings get secure ${i})"
 	done
 
 	echo 'Global:'
@@ -201,7 +201,7 @@ INFO: Showing some known settings" \
 		'wireless_charging_started_sound' \
 	;
 	do
-		echo $'\t'"${i}: `adb shell settings get global ${i}`"
+		echo $'\t'"${i}: $(adb shell settings get global ${i})"
 	done
 else
 	echo 'System:'

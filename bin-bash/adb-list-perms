@@ -6,15 +6,15 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-if   [[ "`adb get-state`" != 'device' ]]
+if   [[ "$(adb get-state)" != 'device' ]]
 then
 	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1
 fi
 
-sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
+sdk="$(adb shell 'getprop ro.build.version.sdk' | tr -d '\r')"
 
-if   (( "${sdk}" < 24 || 29 < "${sdk}" ))
+if   (( sdk < 24 || 29 < sdk ))
 then
 	command='pm'
 else
@@ -23,7 +23,9 @@ fi
 
 echo 'Permission Groups:'
 echo
-adb shell "${command} list permission-groups" | sed -e 's/\r//g; s/^permission group://' | LC_ALL=C sort
+adb shell "${command} list permission-groups" \
+| sed -e 's/\r//g; s/^permission group://' \
+| LC_ALL=C sort
 echo
 echo
 echo 'Permissions:'

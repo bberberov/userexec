@@ -14,20 +14,20 @@ adb-show-appop <appop>
 '
 }
 
-if   [[ "`adb get-state`" != 'device' ]]
+if   [[ "$(adb get-state)" != 'device' ]]
 then
 	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1
 fi
 
-sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
+sdk="$(adb shell 'getprop ro.build.version.sdk' | tr -d '\r')"
 
-if   (( "${sdk}" < 24 ))
+if   (( sdk < 24 ))
 then
-	echo -e '\
+	echo -e "\
 \e[1;31mERROR: This operation is not available before Android 7.0.\e[0m
 
-Try adb-dump-appops.'\
+Try adb-dump-appops."\
 		> /dev/stderr
 	exit 1
 fi
@@ -40,7 +40,7 @@ then
 	| LC_ALL=C sort \
 	| sed -e 's/^/\t- /'
 
-	if   (( 21 <= "${sdk}" ))
+	if   (( 21 <= sdk ))
 	then
 	echo 'Default:'
 	adb shell "appops query-op $1 default" \
@@ -61,7 +61,7 @@ then
 	| LC_ALL=C sort \
 	| sed -e 's/^/\t- /'
 
-	if   (( 29 <= "${sdk}" ))
+	if   (( 29 <= sdk ))
 	then
 	echo 'Foreground:'
 	adb shell "appops query-op $1 foreground" \

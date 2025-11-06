@@ -1,20 +1,20 @@
 #! /usr/bin/env bash
 
-# Copyright © 2022, 2023, 2024 Boian Berberov
+# Copyright © 2022, 2023, 2024, 2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-if   [[ "`adb get-state`" != 'device' ]]
+if   [[ "$(adb get-state)" != 'device' ]]
 then
 	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
 	exit 1
 fi
 
-sdk="`adb shell 'getprop ro.build.version.sdk' | tr -d '\r'`"
+sdk="$(adb shell 'getprop ro.build.version.sdk' | tr -d '\r')"
 
-if   (( "${sdk}" < 24 || 29 < "${sdk}" ))
+if   (( sdk < 24 || 29 < sdk ))
 then
 	command='pm'
 else
@@ -22,9 +22,9 @@ else
 fi
 
 function pkgExists() {
-	if   (( "${sdk}" < 24 ))
+	if   (( sdk < 24 ))
 	then
-		[[ -n "`adb shell pm path $1`" ]] && true || false
+		[[ -n "$(adb shell pm path $1)" ]]
 	else
 		adb shell "pm path $1" > /dev/null
 	fi
@@ -40,7 +40,7 @@ function pkgRevokeNormal() {
 }
 
 function pkgRevokeForced() {
-	if   (( "${sdk}" < 23 ))
+	if   (( sdk < 23 ))
 	then
 		echo "For $1, revoking $2 (Android before 6.0 cannot \"force\") ... "
 		adb shell "pm revoke $1 $2"
@@ -52,7 +52,7 @@ function pkgRevokeForced() {
 
 if   pkgExists "$1"
 then
-	pkg_path="`pkgPath $1`"
+	pkg_path="$(pkgPath "$1")"
 
 	if
 		[[ "${pkg_path:0:6}"  == '/data/'
@@ -74,12 +74,13 @@ then
 	elif
 		[[ "${pkg_path:0:6}" == '/apex/'
 		|| "${pkg_path:0:8}" == '/vendor/'
+		|| "${pkg_path:0:7}" == '/prism/'
 		|| "${pkg_path:0:9}" == '/product/'
 		]]
 	then
 		pkgRevokeForced "$1" "$2"
 	else
-		echo -n "Unknown app path prefix: "
+		echo -n 'Unknown app path prefix: '
 		pkgPath "$1"
 		exit 1
 	fi
