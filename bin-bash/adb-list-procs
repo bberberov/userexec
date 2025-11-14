@@ -1,0 +1,34 @@
+#! /usr/bin/env bash
+
+# Copyright © 2022, 2024, 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ "$(adb get-state)" != 'device' ]]
+then
+	echo -e '\e[1;31mERROR: Default Android device is not available\e[0m' > /dev/stderr
+	exit 1
+fi
+
+# shellcheck disable=SC2063
+adb shell 'dumpsys procstats --active' \
+| tr -d '\r' \
+| sed -E -n -e '
+	/\*/{
+		s/[[:space:]]*\*[[:space:]]*//
+		/^[^[:space:]]{0,7}[[:space:]]/s:[[:space:]]/[[:space:]]:\t\t\t\t\t\t\t\t:
+		/^[^[:space:]]{8,15}[[:space:]]/s:[[:space:]]/[[:space:]]:\t\t\t\t\t\t\t:
+		/^[^[:space:]]{16,23}[[:space:]]/s:[[:space:]]/[[:space:]]:\t\t\t\t\t\t:
+		/^[^[:space:]]{24,31}[[:space:]]/s:[[:space:]]/[[:space:]]:\t\t\t\t\t:
+		/^[^[:space:]]{32,39}[[:space:]]/s:[[:space:]]/[[:space:]]:\t\t\t\t:
+		/^[^[:space:]]{40,47}[[:space:]]/s:[[:space:]]/[[:space:]]:\t\t\t:
+		/^[^[:space:]]{48,55}[[:space:]]/s:[[:space:]]/[[:space:]]:\t\t:
+		/^[^[:space:]]{56,63}[[:space:]]/s:[[:space:]]/[[:space:]]:\t:
+		s:[[:space:]]/[[:space:]]:\t:
+		p
+	}
+' \
+| LC_ALL=C sort \
+| sed -e '/\//s/\t/\n\t\t\t\t\t\t\t\t/'
