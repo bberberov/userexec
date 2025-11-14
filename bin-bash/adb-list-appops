@@ -21,9 +21,20 @@ then
 fi
 
 echo 'AppOps:'
-adb shell "dumpsys appops" \
-| tr -d '\r' \
-| grep ': mode=' \
-| sed -e 's/^[[:space:]]\+/\t- /; s/:.*//' \
-| sort \
-| uniq
+if   (( sdk < 28 ))
+then
+	adb shell 'dumpsys appops' \
+	| grep ': mode=' \
+	| tr -d -c 'A-Z_\n' \
+	| sed -e 's/^/\t- /' \
+	| LC_ALL=C sort \
+	| uniq
+else
+	adb shell 'dumpsys appops' \
+	| grep -E ' Op [A-Z]|: mode=|\(allow|\(default|\(deny|\(ignore' \
+	| sed -e 's/ Op //; /allow/s/(.*//' \
+	| tr -d -c 'A-Z_\n' \
+	| sed -e 's/^/\t- /' \
+	| LC_ALL=C sort \
+	| uniq
+fi
