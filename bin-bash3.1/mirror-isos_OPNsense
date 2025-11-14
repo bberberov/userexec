@@ -20,4 +20,4 @@ wget -r -l 1 -np -N -e robots=off \
 	--reject-regex 'C=|-nano-|-serial-' \
 	-R '*.html' \
 	-R '*.html.tmp' \
-	"${mirror}"
+	"${mirror}/"
