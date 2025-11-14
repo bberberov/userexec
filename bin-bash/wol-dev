@@ -20,5 +20,10 @@ bcast=$(ip addr show "$1" | sed -ne '/inet /{s/.*brd //; s/ scope.*//; p}')
 if   [[ -n "${bcast}" ]]
 then
 	shift
-	wol -v -w 3000 -i "${bcast}" "$@"
+	if   (( 1 < $# ))
+	then
+		wol -v -w 3000 -i "${bcast}" "$@"
+	else
+		wol -v -i "${bcast}" "$@"
+	fi
 fi
