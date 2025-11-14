@@ -46,14 +46,15 @@ df "$@" \
 	s/([10 ][0-9])%/\e[35m\\1\e[39m%\e[39m/g
 
 	# Devices
-	s@/dev/[sv]d[a-z][0-9]*@\e[93m&\e[0m@;
+	s@/dev/[hsv]d[a-z][0-9]*@\e[93m&\e[0m@;
+	s@/dev/nvme[0-9]+n[0-9]+p[0-9]+@\e[93m&\e[0m@;
 	s@/dev/shm@\e[92m&\e[0m@;
 
 	# Filesystems
 	s/ (bcachefs|btrfs|exfat|ext[234]|f2fs|hfsplusjfs|vfat|udf|xfs|zfs) / \e[32m\\1\e[0m /g
 	s/ (tmpfs) / \e[95m\\1\e[0m /g
 	s/ (ceph|cifs|coda|nfs) / \e[96m\\1\e[0m /g
-	s/ (binfmt_misc|bpf|cgroup2|configfs|debugfs|devpts|devtmpfs|hugetlbfs|proc|securityfs|sysfs) / \e[31m\\1\e[0m /g
+	s/ (binfmt_misc|bpf|cgroup2|configfs|debugfs|devpts|devtmpfs|efivarfs|hugetlbfs|proc|securityfs|sysfs) / \e[31m\\1\e[0m /g
 
 	# Numbers
 	s/ ([-0]) / \e[90m\\1\e[39m /g
