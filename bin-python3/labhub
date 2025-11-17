@@ -18,8 +18,25 @@ def get_API(url, agent = default_ua):
 	req = request.Request( url )
 	req.add_header( 'User-agent', agent )
 	with request.urlopen( req ) as f:
-		response = f.read().decode()
-		return response
+		if 200 == f.status:
+			content_type = f.headers.get('content-type')
+			if content_type.startswith('application/json'):
+				response = f.read().decode()
+				return response
+			elif content_type.startswith('text/html'):
+				for cookie in f.headers.get_all('set-cookie'):
+					if 'techaro.lol-anubis-auth' in cookie:
+						print('Anubis :-(')
+						exit(1)
+				else:
+					print('Received some HTML')
+					exit(1)
+			else:
+				print('Received ' + content_type)
+				exit(1)
+		else:
+			print('HTTP Status Code: ' + f.status)
+			exit(1)
 
 class GenericAPI:
 	def ep_emojis(host):
