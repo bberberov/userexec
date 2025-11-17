@@ -408,6 +408,52 @@ class GitLabAPI(GenericAPI):
 		}
 		return response
 
+class PagureAPI(GenericAPI):
+	def __init__(self, api_ep = 'https://pagure.io/api/0/'):
+		self.api_ep = api_ep
+
+	def ep_repos(self, repo):
+		return get_API( self.api_ep + '/' + repo )
+	def ep_branches(self, repo):
+		return get_API( self.api_ep + '/' + repo + '/git/branches?with_commits=false' )
+
+	def ep_tags(self, repo):
+		return get_API( self.api_ep + '/' + repo + '/git/tags?with_commits=true' )
+
+	def info(self, repo):
+		api_repo = json.loads( self.ep_repos(repo) )
+		api_branches = json.loads( self.ep_branches(repo) )
+
+		response = {
+			'id'             : api_repo['id'] ,
+			'name'           : api_repo['fullname'] ,
+			'homepage'       : 'N/A' ,
+			'description'    : api_repo['description'] ,
+			'topics'         : api_repo['tags'] ,
+			'license'        : 'N/A' ,
+			'stars'          : 'N/A' ,
+			'forks'          : 'N/A' ,
+			'languages'      : 'N/A' ,
+			'created'        : api_repo['date_created'] ,
+			'updated'        : api_repo['date_modified'] ,
+			'default_branch' : api_branches['default'] ,
+			'size'           : 'N/A' ,
+		}
+		return response
+
+	def tags(self, repo):
+		api_response = json.loads( self.ep_tags(repo) )
+
+		response = []
+		for tag in api_response['tags'].keys():
+			response.append(
+				{
+					'name'   : tag ,
+					'commit' : api_response['tags'][tag] ,
+				}
+			)
+		return response
+
 class GiteaLikeAPI(GitHubLikeAPI):
 	def ep_tag(self, repo, tag):
 		return get_API( self.api_ep + 'repos/' + repo + '/tags/' + tag )
@@ -568,18 +614,21 @@ class GerritAPI(GenericAPI):
 
 APIs = {
 	'codeberg.org'                      : ForgejoAPI() ,
-	'sourceforge.net'                   : SourceForgeAPI() ,
-	'github.com'                        : GitHubAPI() ,
+	'gitea.angry.im'                    : ForgejoAPI( api_ep = 'https://gitea.angry.im/api/v1/' ) ,
 
 	'code.googlesource.com'             : GerritAPI( api_ep = 'https://code-review.googlesource.com/' ) ,
 	'chromium.googlesource.com'         : GerritAPI( api_ep = 'https://chromium-review.googlesource.com/' ) ,
 
+	'src.openmamba.org'                 : GiteaAPI( api_ep = 'https://src.openmamba.org/api/v1/' ) ,
 	'src.opensuse.org'                  : GiteaAPI( api_ep = 'https://src.opensuse.org/api/v1/' ) ,
+
+	'github.com'                        : GitHubAPI() ,
 
 	'gitlab.com'                        : GitLabAPI() ,
 	'framagit.org'                      : GitLabAPI( api_ep = 'https://framagit.org/api/v4/' ) ,
 	'git.adelielinux.org'               : GitLabAPI( api_ep = 'https://git.adelielinux.org/api/v4/' ) ,
 	'git.jami.net'                      : GitLabAPI( api_ep = 'https://git.jami.net/api/v4/' ) ,
+	'gitlab.alpinelinux.org'            : GitLabAPI( api_ep = 'https://gitlab.alpinelinux.org/api/v4/' ) ,
 	'gitlab.archlinux.org'              : GitLabAPI( api_ep = 'https://gitlab.archlinux.org/api/v4/' ) ,
 	'gitlab.freedesktop.org'            : GitLabAPI( api_ep = 'https://gitlab.freedesktop.org/api/v4/' ) ,
 	'gitlab.gnome.org'                  : GitLabAPI( api_ep = 'https://gitlab.gnome.org/api/v4/' ) ,
@@ -587,9 +636,15 @@ APIs = {
 	'ohwr.org'                          : GitLabAPI( api_ep = 'https://ohwr.org/api/v4/' ) ,
 	'salsa.debian.org'                  : GitLabAPI( api_ep = 'https://salsa.debian.org/api/v4/' ) ,
 	'source.puri.sm'                    : GitLabAPI( api_ep = 'https://source.puri.sm/api/v4/' ) ,
+
+	'pagure.io'                         : PagureAPI() ,
+	'src.fedoraproject.org'             : PagureAPI( api_ep = 'https://src.fedoraproject.org/api/0/' ) ,
+
+	'sourceforge.net'                   : SourceForgeAPI() ,
 }
 
 gitURL = {
+	# ForgejoAPI
 	'ftp://codeberg.org/'               : APIs['codeberg.org'] ,
 	'ftps://codeberg.org/'              : APIs['codeberg.org'] ,
 	'git://codeberg.org/'               : APIs['codeberg.org'] ,
@@ -598,21 +653,16 @@ gitURL = {
 	'https://codeberg.org/'             : APIs['codeberg.org'] ,
 	'ssh://codeberg.org/'               : APIs['codeberg.org'] ,
 
-	'ftp://git.code.sf.net/'            : APIs['sourceforge.net'] ,
-	'ftps://git.code.sf.net/'           : APIs['sourceforge.net'] ,
-	'git://git.code.sf.net/'            : APIs['sourceforge.net'] ,
-	'git@git.code.sf.net:'              : APIs['sourceforge.net'] ,
-	'http://git.code.sf.net/'           : APIs['sourceforge.net'] ,
-	'https://git.code.sf.net/'          : APIs['sourceforge.net'] ,
-	'ssh://git.code.sf.net/'            : APIs['sourceforge.net'] ,
+	# GerritAPI
 
-	'ftp://github.com/'                 : APIs['github.com'] ,
-	'ftps://github.com/'                : APIs['github.com'] ,
-	'git://github.com/'                 : APIs['github.com'] ,
-	'git@github.com:'                   : APIs['github.com'] ,
-	'http://github.com/'                : APIs['github.com'] ,
-	'https://github.com/'               : APIs['github.com'] ,
-	'ssh://github.com/'                 : APIs['github.com'] ,
+	# GiteaAPI
+	'ftp://src.openmamba.org/'          : APIs['src.openmamba.org'] ,
+	'ftps://src.openmamba.org/'         : APIs['src.openmamba.org'] ,
+	'git://src.openmamba.org/'          : APIs['src.openmamba.org'] ,
+	'git@src.openmamba.org:'            : APIs['src.openmamba.org'] ,
+	'http://src.openmamba.org/'         : APIs['src.openmamba.org'] ,
+	'https://src.openmamba.org/'        : APIs['src.openmamba.org'] ,
+	'ssh://src.openmamba.org/'          : APIs['src.openmamba.org'] ,
 
 	'ftp://src.opensuse.org/'           : APIs['src.opensuse.org'] ,
 	'ftps://src.opensuse.org/'          : APIs['src.opensuse.org'] ,
@@ -622,6 +672,16 @@ gitURL = {
 	'https://src.opensuse.org/'         : APIs['src.opensuse.org'] ,
 	'ssh://src.opensuse.org/'           : APIs['src.opensuse.org'] ,
 
+	# GitHubAPI
+	'ftp://github.com/'                 : APIs['github.com'] ,
+	'ftps://github.com/'                : APIs['github.com'] ,
+	'git://github.com/'                 : APIs['github.com'] ,
+	'git@github.com:'                   : APIs['github.com'] ,
+	'http://github.com/'                : APIs['github.com'] ,
+	'https://github.com/'               : APIs['github.com'] ,
+	'ssh://github.com/'                 : APIs['github.com'] ,
+
+	# GitLabAPI
 	'ftp://gitlab.com/'                 : APIs['gitlab.com'] ,
 	'ftps://gitlab.com/'                : APIs['gitlab.com'] ,
 	'git://gitlab.com/'                 : APIs['gitlab.com'] ,
@@ -637,6 +697,14 @@ gitURL = {
 	'http://framagit.org/'              : APIs['framagit.org'] ,
 	'https://framagit.org/'             : APIs['framagit.org'] ,
 	'ssh://framagit.org/'               : APIs['framagit.org'] ,
+
+	'ftp://gitlab.alpinelinux.org/'     : APIs['gitlab.alpinelinux.org'] ,
+	'ftps://gitlab.alpinelinux.org/'    : APIs['gitlab.alpinelinux.org'] ,
+	'git://gitlab.alpinelinux.org/'     : APIs['gitlab.alpinelinux.org'] ,
+	'git@gitlab.alpinelinux.org:'       : APIs['gitlab.alpinelinux.org'] ,
+	'http://gitlab.alpinelinux.org/'    : APIs['gitlab.alpinelinux.org'] ,
+	'https://gitlab.alpinelinux.org/'   : APIs['gitlab.alpinelinux.org'] ,
+	'ssh://gitlab.alpinelinux.org/'     : APIs['gitlab.alpinelinux.org'] ,
 
 	'ftp://git.adelielinux.org/'        : APIs['git.adelielinux.org'] ,
 	'ftps://git.adelielinux.org/'       : APIs['git.adelielinux.org'] ,
@@ -709,6 +777,32 @@ gitURL = {
 	'http://source.puri.sm/'            : APIs['source.puri.sm'] ,
 	'https://source.puri.sm/'           : APIs['source.puri.sm'] ,
 	'ssh://source.puri.sm/'             : APIs['source.puri.sm'] ,
+
+	# PagureAPI
+	'ftp://pagure.io/'                  : APIs['pagure.io'] ,
+	'ftps://pagure.io/'                 : APIs['pagure.io'] ,
+	'git://pagure.io/'                  : APIs['pagure.io'] ,
+	'git@pagure.io:'                    : APIs['pagure.io'] ,
+	'http://pagure.io/'                 : APIs['pagure.io'] ,
+	'https://pagure.io/'                : APIs['pagure.io'] ,
+	'ssh://pagure.io/'                  : APIs['pagure.io'] ,
+
+	'ftp://src.fedoraproject.org/'      : APIs['src.fedoraproject.org'] ,
+	'ftps://src.fedoraproject.org/'     : APIs['src.fedoraproject.org'] ,
+	'git://src.fedoraproject.org/'      : APIs['src.fedoraproject.org'] ,
+	'git@src.fedoraproject.org:'        : APIs['src.fedoraproject.org'] ,
+	'http://src.fedoraproject.org/'     : APIs['src.fedoraproject.org'] ,
+	'https://src.fedoraproject.org/'    : APIs['src.fedoraproject.org'] ,
+	'ssh://src.fedoraproject.org/'      : APIs['src.fedoraproject.org'] ,
+
+	# SourceForgeAPI
+	'ftp://git.code.sf.net/'            : APIs['sourceforge.net'] ,
+	'ftps://git.code.sf.net/'           : APIs['sourceforge.net'] ,
+	'git://git.code.sf.net/'            : APIs['sourceforge.net'] ,
+	'git@git.code.sf.net:'              : APIs['sourceforge.net'] ,
+	'http://git.code.sf.net/'           : APIs['sourceforge.net'] ,
+	'https://git.code.sf.net/'          : APIs['sourceforge.net'] ,
+	'ssh://git.code.sf.net/'            : APIs['sourceforge.net'] ,
 }
 
 if '__main__' == __name__:
