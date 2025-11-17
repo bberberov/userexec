@@ -153,11 +153,11 @@ class GitHubLikeAPI(GenericAPI):
 		for release in api_response:
 			response.append(
 				{
-					'id'     : release['id'] ,
 					'name'   : release['name'] ,
 					'tag'    : release['tag_name'] ,
 					'author' : release['author']['login'] ,
 					'commit' : release['target_commitish'] ,
+					'date'   : release['published_at'] ,
 				}
 			)
 		return response
@@ -165,10 +165,24 @@ class GitHubLikeAPI(GenericAPI):
 	def release(self, repo, tag):
 		api_response = json.loads( self.ep_release(repo, tag) )
 
+		assets = []
+		for asset in api_response['assets']:
+			assets.append(
+				{
+					'filename' : asset['name'] ,
+					'size'     : asset['size'] ,
+					'url'      : asset['browser_download_url'] ,
+					'digest'   : asset['digest'] ,
+				}
+			)
+
 		response = {
 			'name'   : api_response['name'] ,
 			'tag'    : api_response['tag_name'] ,
 			'author' : api_response['author']['login'] ,
+			'commit' : api_response['target_commitish'] ,
+			'date'   : api_response['published_at'] ,
+			'assets' : assets
 		}
 		return response
 
@@ -340,8 +354,11 @@ class GitLabAPI(GenericAPI):
 		for release in api_response:
 			response.append(
 				{
-					'name' : release['name'] ,
-					'tag'  : release['tag_name'] ,
+					'name'   : release['name'] ,
+					'tag'    : release['tag_name'] ,
+					'author' : release['author']['name'] ,
+					'commit' : release['commit']['id'] ,
+					'date'   : release['released_at'] ,
 				}
 			)
 		return response
@@ -349,9 +366,24 @@ class GitLabAPI(GenericAPI):
 	def release(self, repo, tag):
 		api_response = json.loads( self.ep_release(repo, tag) )
 
+		assets = []
+		for asset in api_response['assets']['links']:
+			assets.append(
+				{
+					'filename' : asset['name'] ,
+					'size'     : 'N/A' ,
+					'url'      : asset['direct_asset_url'] ,
+					'digest'   : 'N/A' ,
+				}
+			)
+
 		response = {
-			'name' : api_response['name'] ,
-			'tag'  : api_response['tag_name'] ,
+			'name'   : api_response['name'] ,
+			'tag'    : api_response['tag_name'] ,
+			'author' : api_response['author']['name'] ,
+			'commit' : api_response['commit']['id'] ,
+			'date'   : api_response['released_at'] ,
+			'assets' : assets
 		}
 		return response
 
