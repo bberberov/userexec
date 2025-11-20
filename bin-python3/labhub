@@ -42,6 +42,9 @@ def get_API(url, agent = default_ua):
 			exit(1)
 
 class GenericAPI:
+	def normalize_path(self, path):
+		return path.strip('/')
+
 	def ep_emojis(self):
 		return None
 	def ep_gitignores(self):
@@ -876,7 +879,7 @@ if '__main__' == __name__:
 		for host in APIs.keys():
 			if host == URL.hostname:
 				API = APIs[host]
-				path = URL.path.strip('/')
+				path = API.normalize_path(URL.path)
 				break
 		else:
 			print( 'URL not supported' )
