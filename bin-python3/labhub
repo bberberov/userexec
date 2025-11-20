@@ -39,40 +39,40 @@ def get_API(url, agent = default_ua):
 			exit(1)
 
 class GenericAPI:
-	def ep_emojis(host):
+	def ep_emojis(self):
 		return None
-	def ep_gitignores(host):
+	def ep_gitignores(self):
 		return None
-	def ep_gitignore(host):
+	def ep_gitignore(self, name):
 		return None
-	def ep_licenses(host):
+	def ep_licenses(self):
 		return None
-	def ep_license(host):
-		return None
-
-	def ep_repos(host, repo):
+	def ep_license(self, name):
 		return None
 
-	def ep_languages(host, repo):
+	def ep_repos(self, repo):
 		return None
 
-	def ep_releases(host, repo):
-		return None
-	def ep_release(host, repo, tag):
-		return None
-	def ep_tags(host, repo):
-		return None
-	def ep_tag(host, repo, tag):
+	def ep_languages(self, repo):
 		return None
 
-	def emojis(host):
+	def ep_releases(self, repo):
 		return None
-	def gitignores(host):
+	def ep_release(self, repo, tag):
 		return None
-	def licenses(host):
+	def ep_tags(self, repo):
+		return None
+	def ep_tag(self, repo, tag):
 		return None
 
-	def info(host, repo):
+	def emojis(self):
+		return None
+	def gitignores(self):
+		return None
+	def licenses(self):
+		return None
+
+	def info(self, repo):
 		response = {
 			'id'             : None ,
 			'name'           : None ,
@@ -90,17 +90,17 @@ class GenericAPI:
 		}
 		return response
 
-	def size(host, repo):
+	def size(self, repo):
 		return None
-	def stars(host, repo):
+	def stars(self, repo):
 		return None
-	def releases(host, repo):
+	def releases(self, repo):
 		return None
-	def release(host, repo, tag):
+	def release(self, repo, tag):
 		return None
-	def tags(host, repo):
+	def tags(self, repo):
 		return None
-	def tag(host, repo, tag):
+	def tag(self, repo, tag):
 		return None
 
 class GitHubLikeAPI(GenericAPI):
