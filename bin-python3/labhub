@@ -822,7 +822,18 @@ if '__main__' == __name__:
 		title='Command',
 		required=True
 	)
-	parser.add_argument(
+
+	repo = parser.add_mutually_exclusive_group()
+	repo.add_argument(
+		'--upstream' ,
+		action='store_true' ,
+		help='Use the "upstream" remote repository insted of "origin"'
+	)
+	repo.add_argument(
+		'--remote' ,
+		help='Use the named remote repository insted of "origin"'
+	)
+	repo.add_argument(
 		'--url' ,
 		help='Specify the "web" URL of the repository manually, or when not inside a repo or tree folder'
 	)
@@ -885,7 +896,15 @@ if '__main__' == __name__:
 			print( 'URL not supported' )
 			exit(1)
 	else:
-		check_repo = subprocess.run( [ 'git', 'remote', 'get-url', 'origin' ], capture_output=True )
+		if args.upstream:
+			remote_name = 'upstream'
+		elif args.remote:
+			remote_name = args.remote
+		else:
+			remote_name = 'origin'
+
+		check_repo = subprocess.run( [ 'git', 'remote', 'get-url', remote_name ], capture_output=True )
+
 		if 0 == check_repo.returncode:
 			repo_str = check_repo.stdout.decode()
 
@@ -897,7 +916,9 @@ if '__main__' == __name__:
 			else:
 				print( 'git URL ' + repo_str + ' not supported' )
 				exit(1)
-
+		elif 2 == check_repo.returncode:
+			print( 'Remote ' + remote_name + ' not found' )
+			exit(1)
 		else:
 			print( 'URL not specified and not invoked inside a repo' )
 			print( 'Using built-in default: ' + default_host + '/' + default_path   )
