@@ -3,6 +3,7 @@
 import argparse
 import json
 import pprint
+import shutil
 import subprocess
 
 from urllib import request
@@ -13,6 +14,8 @@ default_ua = 'Mozilla/5.0 (Windows NT 10.0; rv:140.0) Gecko/20100101 Firefox/140
 
 default_host = 'github.com'
 default_path = 'jgraph/drawio-desktop'
+
+default_width = shutil.get_terminal_size().columns
 
 def get_API(url, agent = default_ua):
 	req = request.Request( url )
@@ -821,21 +824,28 @@ if '__main__' == __name__:
 		help='Specify the "web" URL of the repository manually, or when not inside a repo or tree folder'
 	)
 
-	cmd_emojis    = cmd.add_parser('emojis')
-	cmd_emojis.set_defaults(   cmd='emojis')
+	cmd_emojis = cmd.add_parser('emojis')
+	cmd_emojis.set_defaults(cmd='emojis')
 	cmd_emojis.add_argument('--json', action='store_true')
 
-	cmd_gitignores    = cmd.add_parser('gitignores')
-	cmd_gitignores.set_defaults(   cmd='gitignores')
+	cmd_gitignores = cmd.add_parser('gitignores')
+	cmd_gitignores.set_defaults(cmd='gitignores')
 	cmd_gitignores.add_argument('--json', action='store_true')
 
-	cmd_info     = cmd.add_parser('info')
-	cmd_info.set_defaults(    cmd='info')
+	cmd_licenses = cmd.add_parser('licenses')
+	cmd_licenses.set_defaults(cmd='licenses')
+	cmd_licenses.add_argument('--json', action='store_true')
+
+
+	cmd_info = cmd.add_parser('info')
+	cmd_info.set_defaults(cmd='info')
 	cmd_info.add_argument('--json', action='store_true')
 
-	cmd_licenses    = cmd.add_parser('licenses')
-	cmd_licenses.set_defaults(   cmd='licenses')
-	cmd_licenses.add_argument('--json', action='store_true')
+	cmd_size = cmd.add_parser('size')
+	cmd_size.set_defaults(cmd='size')
+
+	cmd_stars = cmd.add_parser('stars')
+	cmd_stars.set_defaults(cmd='stars')
 
 	cmd_releases = cmd.add_parser('releases')
 	cmd_releases.set_defaults(cmd='releases')
@@ -846,18 +856,12 @@ if '__main__' == __name__:
 	cmd_release.add_argument('--json', action='store_true')
 	cmd_release.add_argument('release')
 
-	cmd_size    = cmd.add_parser('size')
-	cmd_size.set_defaults(   cmd='size')
-
-	cmd_stars    = cmd.add_parser('stars')
-	cmd_stars.set_defaults(   cmd='stars')
-
-	cmd_tags     = cmd.add_parser('tags')
-	cmd_tags.set_defaults(    cmd='tags')
+	cmd_tags = cmd.add_parser('tags')
+	cmd_tags.set_defaults(cmd='tags')
 	cmd_tags.add_argument('--json', action='store_true')
 
-	cmd_tag     = cmd.add_parser('tag')
-	cmd_tag.set_defaults(    cmd='tag')
+	cmd_tag = cmd.add_parser('tag')
+	cmd_tag.set_defaults(cmd='tag')
 	cmd_tag.add_argument('--json', action='store_true')
 	cmd_tag.add_argument('tag')
 
@@ -902,43 +906,43 @@ if '__main__' == __name__:
 			if args.json:
 				print( API.ep_emojis() )
 			else:
-				pprint.pp( API.emojis() )
+				pprint.pp( API.emojis(), width=default_width )
 		case 'gitignores':
 			if args.json:
 				print( API.ep_gitignores() )
 			else:
-				pprint.pp( API.gitignores() )
-		case 'info':
-			if args.json:
-				print( API.ep_repos(path) )
-			else:
-				pprint.pp( API.info(path) )
+				pprint.pp( API.gitignores(), width=default_width )
 		case 'licenses':
 			if args.json:
 				print( API.ep_licenses() )
 			else:
-				pprint.pp( API.licenses() )
+				pprint.pp( API.licenses(), width=default_width )
+		case 'info':
+			if args.json:
+				print( API.ep_repos(path) )
+			else:
+				pprint.pp( API.info(path), width=default_width )
+		case 'size':
+			pprint.pp( API.size(path), width=default_width )
+		case 'stars':
+			pprint.pp( API.stars(path), width=default_width )
 		case 'releases':
 			if args.json:
 				print( API.ep_releases(path) )
 			else:
-				pprint.pp( API.releases(path) )
+				pprint.pp( API.releases(path), width=default_width )
 		case 'release':
 			if args.json:
 				print( API.ep_release(path, args.release) )
 			else:
-				pprint.pp( API.release(path, args.release) )
-		case 'size':
-			pprint.pp( API.size(path) )
-		case 'stars':
-			pprint.pp( API.stars(path) )
+				pprint.pp( API.release(path, args.release), width=default_width )
 		case 'tags':
 			if args.json:
 				print( API.ep_tags(path) )
 			else:
-				pprint.pp( API.tags(path) )
+				pprint.pp( API.tags(path), width=default_width )
 		case 'tag':
 			if args.json:
 				print( API.ep_tag(path, args.tag) )
 			else:
-				pprint.pp( API.tag(path, args.tag) )
+				pprint.pp( API.tag(path, args.tag), width=default_width )
