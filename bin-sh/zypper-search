@@ -1,0 +1,14 @@
+#! /bin/sh
+
+# Copyright © 2025 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+zypper --no-refresh search \
+	"$@" \
+| sed -e $'
+	s/^--.*/\e[90m&\e[0m/
+	s/|/\e[90m&\e[0m/g
+'
