@@ -126,7 +126,9 @@ class GitHubLikeAPI(GenericAPI):
 	def ep_release(self, repo, tag):
 		return get_API( self.api_ep + 'repos/' + repo + '/releases/tags/' + tag )
 	def ep_tags(self, repo):
-		return get_API( self.api_ep + 'repos/' + repo + '/tags' )
+		return get_API( self.api_ep + 'repos/' + repo + '/git/refs/tags' )
+	def ep_tag(self, repo, tag):
+		return get_API( self.api_ep + 'repos/' + repo + '/git/refs/tags/' + tag )
 
 	def gitignores(self):
 		return json.loads( self.ep_gitignores() )
@@ -197,13 +199,43 @@ class GitHubLikeAPI(GenericAPI):
 
 		response = []
 		for tag in api_response:
-			response.append(
-				{
-					# 'id' : tag['id'] ,
-					'name'   : tag['name'] ,
-					'commit' : tag['commit']['sha'] ,
-				}
-			)
+			if 'tag' == tag['object']['type']:
+				response.append(
+					{
+						'name'   : tag['ref'].removeprefix('refs/tags/') ,
+						'type'   : 'annotated' ,
+					}
+				)
+			else:
+				response.append(
+					{
+						'name'   : tag['ref'].removeprefix('refs/tags/') ,
+						'type'   : 'lightweight' ,
+						'commit' : tag['object']['sha'] ,
+					}
+				)
+		return response
+
+	def tag(self, repo, tag):
+		api_tag = json.loads( self.ep_tag(repo, tag) )
+
+		if 'tag' == api_tag['object']['type']:
+			api_commit = json.loads( get_API(api_tag['object']['url']) )
+
+			response = {
+				'name'     : api_tag['ref'].removeprefix('refs/tags/') ,
+				'type'     : 'annotated' ,
+				'tagger'   : '' ,
+				'message'  : '' ,
+				'verified' : '' ,
+				'commit'   : api_commit['object']['sha'] ,
+			}
+		else:
+			response = {
+				'name'   : api_tag['ref'].removeprefix('refs/tags/') ,
+				'type'   : 'lightweight' ,
+				'commit' : api_tag['object']['sha'] ,
+			}
 		return response
 
 class GitHubAPI(GitHubLikeAPI):
@@ -270,7 +302,6 @@ class GitHubAPI(GitHubLikeAPI):
 		}
 		return response
 
-	# tag, only by commit reference, not name
 
 class GitLabAPI(GenericAPI):
 	def __init__(self, api_ep = 'https://gitlab.com/api/v4/'):
@@ -398,19 +429,31 @@ class GitLabAPI(GenericAPI):
 
 		response = []
 		for tag in api_response:
-			response.append(
-				{
-					'name' : tag['name'] ,
-				}
-			)
+			if None == tag['created_at']:
+				response.append(
+					{
+						'name'   : tag['name'] ,
+						'type'   : 'lightweight' ,
+						'commit' : tag['commit']['id'] ,
+					}
+				)
+			else:
+				response.append(
+					{
+						'name'   : tag['name'] ,
+						'type'   : 'annotated' ,
+						'commit' : tag['commit']['id'] ,
+					}
+				)
 		return response
 
 	def tag(self, repo, tag):
 		api_response = json.loads( self.ep_tag(repo, tag) )
 
 		response = {
-			'name'    : api_response['name'] ,
-			'message' : api_response['message'] ,
+			'name'   : api_response['name'] ,
+			'type'   : 'lightweight' if None == tag['created_at'] else 'annotated' ,
+			'commit' : tag['commit']['id'] ,
 		}
 		return response
 
@@ -461,23 +504,12 @@ class PagureAPI(GenericAPI):
 		return response
 
 class GiteaLikeAPI(GitHubLikeAPI):
-	def ep_tag(self, repo, tag):
-		return get_API( self.api_ep + 'repos/' + repo + '/tags/' + tag )
 
 	def stars(self, repo):
 		api_response = json.loads( self.ep_repos(repo) )
 
 		response = {
 			'stars' : api_repo['stars_count'] ,
-		}
-		return response
-
-	def tag(self, repo, tag):
-		api_response = json.loads( self.ep_tag(repo, tag) )
-
-		response = {
-			'name'    : api_response['name'] ,
-			'message' : api_response['message'] ,
 		}
 		return response
 
