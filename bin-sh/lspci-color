@@ -72,7 +72,10 @@ lspci "$@" \
 	}
 	/^\tBus: /{
 		# Header
-		s/Bus:/\e[90mBus:\e[0m/
+		s/Bus:/\e[35mBus:\e[0m/
+
+		# Highlight values
+		s/(secondary|subordinate)=(..)/\\1=\e[35m\\2\e[0m/g
 	}
 	/^\tI\/O behind bridge: /{
 		# Header
