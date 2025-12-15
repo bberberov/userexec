@@ -81,8 +81,8 @@ zypper --no-refresh info \
 		}
 
 
-		/^    (mimehandler|service|user)\(/{
-			s/(mimehandler|service|user)/\e[33m&\e[0m/
+		/^    (mimehandler|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|service|user)\(/{
+			s/(mimehandler|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|service|user)/\e[33m&\e[0m/
 		}
 
 		/^    [[:alpha:]]/{
@@ -105,7 +105,7 @@ zypper --no-refresh info \
 
 			s/ (pattern|pattern-category|pattern-icon|pattern-order|pattern-visible)/ \e[35m\\1\e[0m/g
 
-			s/ (mimehandler|service|user)/ \e[33m\\1\e[0m/g
+			s/ (mimehandler|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|service|user)/ \e[33m\\1\e[0m/g
 
 			s/ (\()/ \e[1m\\1\e[0m/g
 			s/ (\))/ \e[1m\\1\e[0m/g
