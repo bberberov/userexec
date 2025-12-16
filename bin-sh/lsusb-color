@@ -6,6 +6,18 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
+if
+	(( 4 == BASH_VERSINFO[0] && 2 <= BASH_VERSINFO[1] \
+	|| 4  < BASH_VERSINFO[0] \
+	))
+then
+	bus=$'\u255F\u2500\u2500'
+	port=$'\u2514\u2500\u2500'
+else
+	bus=":--"
+	port="\__"
+fi
+
 lsusb "$@" \
 | sed -E -e $'
 	# List
@@ -14,7 +26,7 @@ lsusb "$@" \
 	# Verbose
 	/^Negotiated speed: /{
 		# Highlight values
-		s/: /: \e[1m/
+		s/: /: \e[35m/
 		s/$/\e[0m/
 
 		# Header
@@ -46,7 +58,7 @@ lsusb "$@" \
 
 	# Tree
 	/\/:  /{
-		s/\/:  Bus ([0-9a-f]{3})\.Port ([0-9a-f]{3}): Dev ([0-9a-f]{3}),/\e[90m:__\/ Bus \e[0m\\1\e[90m.Port \e[0m\\2\e[90m: Dev \e[0m\\3\e[90m,/
+		s/\/:  Bus ([0-9a-f]{3})\.Port ([0-9a-f]{3}): Dev ([0-9a-f]{3}),/\e[90m'"${bus}"$' Bus \e[0m\\1\e[90m.Port \e[0m\\2\e[90m: Dev \e[0m\\3\e[90m,/
 
 		s/Class=([^,]+),/Class=\e[0m\\1\e[90m,/
 		s/Driver=([^,]+),/Driver=\e[0;1m\\1\e[0;90m,/
@@ -54,11 +66,11 @@ lsusb "$@" \
 	}
 
 	/    [ ]*ID/{
-		s/ ID ([0-9a-f]{4}:[0-9a-f]{4})/\e[90m\\\\ ID \e[0;1m\\1\e[0m/
+		s/ID ([0-9a-f]{4}:[0-9a-f]{4})/\e[90mID \e[0;1m\\1\e[0m/
 	}
 
 	/    [ ]*\|__/{
-		s/\|__ Port ([0-9a-f]{3}): Dev ([0-9a-f]{3}), If ([0-9a-f]+),/\e[90m|__\/ Port \e[0m\\1\e[90m: Dev \e[0m\\2\e[90m, If \e[0m\\3\e[90m,/
+		s/\|__ Port ([0-9a-f]{3}): Dev ([0-9a-f]{3}), If ([0-9a-f]+),/\e[90m'"${port}"$' Port \e[0m\\1\e[90m: Dev \e[0m\\2\e[90m, If \e[0m\\3\e[90m,/
 
 		s/Class=([^,]+),/Class=\e[0m\\1\e[90m,/
 		s/Driver=([^,]+),/Driver=\e[0;1m\\1\e[0;90m,/

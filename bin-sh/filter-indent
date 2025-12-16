@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright © 2022, 2024 Boian Berberov
+# Copyright © 2022, 2024, 2025 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -11,6 +11,9 @@
 usage() {
 echo '
 Convert tabs to spaces or vice-versa
+
+filter-indent <option>
+
 Options:
     --1sp-to-tab
     --2sp-to-tab

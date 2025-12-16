@@ -11,18 +11,25 @@ do
 	echo "=== ${name} ==="
 	echo --whatenhances
 	rpm -q --whatenhances "${name}"
+	echo
 	echo --whatprovides
 	rpm -q --whatprovides "${name}"
+	echo
 	echo --whatrecommends
 	rpm -q --whatrecommends "${name}"
+	echo
 	echo --whatrequires
 	rpm -q --whatrequires "${name}"
+	echo
 	echo --whatsuggests
 	rpm -q --whatsuggests "${name}"
+	echo
 	echo --whatsupplements
 	rpm -q --whatsupplements "${name}"
 done \
 | sed -e $'
-	s/^--.*/\e[90m&\e[0m/
+	s/^=== .*/\e[1m&\e[0m/
+	s/^--.*/\e[36m&\e[0m/
 	s/^no package .*/\e[31m&\e[0m/
+	s/^patterns-.*/\e[33m&\e[0m/
 '
