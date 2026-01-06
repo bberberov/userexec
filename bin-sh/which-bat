@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright © 2024, 2025 Boian Berberov
+# Copyright © 2024, 2025, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -14,6 +14,12 @@ do
 	elif filepath=$(which "${name}" 2>/dev/null)
 	then
 		bat "${filepath}"
+	elif [ -e "/sbin/${name}" ]
+	then
+		bat "/sbin/${name}"
+	elif [ -e "/usr/sbin/${name}" ]
+	then
+		bat "/usr/sbin/${name}"
 	else
 		echo "${name} not found" > /dev/stderr
 	fi

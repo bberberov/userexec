@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Copyright © 2024, 2025 Boian Berberov
+# Copyright © 2024, 2025, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -24,6 +24,22 @@ do
 		fi
 
 		rpm -qlf "${filepath}"
+	elif [ -e "/sbin/${name}" ]
+	then
+		if   [ 1 -lt $# ]
+		then
+			echo "=== /sbin/${name} ==="
+		fi
+
+		rpm -qlf "/sbin/${name}"
+	elif [ -e "/usr/sbin/${name}" ]
+	then
+		if   [ 1 -lt $# ]
+		then
+			echo "=== /usr/sbin/${name} ==="
+		fi
+
+		rpm -qlf "/usr/sbin/${name}"
 	else
 		echo "${name} not found" > /dev/stderr
 	fi
