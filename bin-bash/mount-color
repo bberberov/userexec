@@ -1,0 +1,14 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+mount "$@" \
+| sed -E -e $'
+	s/ on ([[:graph:]]+)/ on \e[34m\\1\e[0m/
+	s/ (on|type) / & /g
+' \
+| filter-highlight --blockdev --filesys --numbers

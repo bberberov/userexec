@@ -6,12 +6,13 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-df "$@" \
-| sed -E -e $'
-	# Extra Space
-	s/[[:space:]]+/& /g
-	1s/Mounted  on/Mounted on/
-
-	$s/^(total)[[:space:]]/\e[1m\\1\e[0m /
-' \
-| filter-highlight --header --blockdev --filesys --numbers --percents --units
+complete -W '
+	--blockdev
+	--filesys
+	--numbers
+	--percents
+	--units
+	--header
+	--box
+	--show
+' filter-highlight
