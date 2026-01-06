@@ -1,0 +1,14 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+checkbashisms "$@" 2>&1 \
+| sed -E -e $'
+	s/^cannot open script ([[:graph:]]+) for reading: Permission denied/\e[31mcannot open script \e[1m\\1\e[22m for reading: Permission denied\e[0m/
+	s/^could not find any possible bashisms in bash script ([[:graph:]]+)/\e[31mcould not find any possible bashisms in bash script \e[1m\\1\e[0m/
+	s/^possible bashism in ([[:graph:]]+) line ([0-9]+)/\e[34mpossible bashism in \e[1m\\1\e[22m line \e[1m\\2\e[0m/
+'
