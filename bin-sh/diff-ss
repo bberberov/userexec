@@ -1,13 +1,42 @@
-#! /bin/sh
+#! /usr/bin/env bash
 
-# Copyright © 2025 Boian Berberov
+# Copyright © 2025, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-diff "$@" \
-| grep -o '^[<>]' \
-| uniq \
-| sort \
-| uniq
+if   (( 2 == $# ))
+then
+	diff "$@" \
+	| grep -o '^[<>]' \
+	| uniq \
+	| sort \
+	| uniq
+elif (( 2 < $# ))
+then
+	source="${1}"
+	shift
+	for target in "$@"
+	do
+		if   [[ "${source}" != "${target}" ]]
+		then
+			op="$(
+				diff "${source}" "${target}" \
+				| grep -o '^[<>]' \
+				| uniq \
+				| sed -n -e 'H; ${ g; s/\n//g; p; }'
+			)"
+			case "${op}" in
+				'<')
+					echo "${source}" $'\e[32m< \e[0m' "${target}"
+				;;
+				'>')
+					echo "${source}" $'\e[33m >\e[0m' "${target}"
+				;;
+				*)
+					echo "${source}" $'\e[31m><\e[0m' "${target}"
+			esac
+		fi
+	done
+fi
