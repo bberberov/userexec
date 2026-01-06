@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2024, 2025 Boian Berberov
+# Copyright © 2024, 2025, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -8,12 +8,22 @@
 
 color_filter=$'
 /=|:/{
-	s/Block size/\e[93mBlock\e[90m size\e[0m/
-	s/Fragment size/\e[93mFragment\e[90m size\e[0m/
-	s/Cluster size/\e[35mCluster\e[90m size\e[0m/
+	/^Block size/{
+		s/Block size/\e[93mBlock\e[90m size\e[0m/
+		s/=([0-9]+)/=\e[93m\\1\e[0m/
+	}
+	/^Fragment size/{
+		s/Fragment size/\e[93mFragment\e[90m size\e[0m/
+		s/=([0-9]+)/=\e[93m\\1\e[0m/
+	}
+	/^Cluster size/{
+		s/Cluster size/\e[35mCluster\e[90m size\e[0m/
+		s/=([0-9]+)/=\e[35m\\1\e[0m/
+	}
 
 	s/[^=:]+/\e[90m&\e[0m/
 	s/Stripe width/\e[90m&\e[0m/
+
 	s/=/ = /g
 }
 

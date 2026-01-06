@@ -1,0 +1,92 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+"$(basename "${0%-color}")" "$@" \
+| sed -E -e $'
+/^Filesystem features:/{
+	# Journal
+	s/(has_journal|journal_dev)/\e[95m&\e[0m/g
+
+	# Defaults
+	s/(dir_index|ext_attr|filetype|large_file)/\e[90m&\e[0m/g
+	s/sparse_super( |$)/\e[90m&\e[0m/g
+
+	# Ext4 defaults
+	s/(64bit|dir_nlink|extent|extra_isize|flex_bg|metadata_csum_seed|metadata_csum)/\e[90m&\e[0m/g
+
+	# Undesirable
+	s/(meta_bg|needs_recovery|orphan_file|resize_inode|uninit_bg)/\e[31m&\e[0m/g
+
+	# Notable
+	s/(bigalloc|inline_data|large_dir|project|quota|sparse_super2)/\e[32m&\e[0m/g
+}
+/^Filesystem state:/{
+	s/clean$/\e[32m&\e[0m/
+}
+/^Inode count:/{
+	s/[0-9]+$/\e[36m&\e[0m/
+}
+/^Block count:/{
+	s/[0-9]+$/\e[93m&\e[0m/
+}
+/^Free blocks:/{
+	s/[0-9]+$/\e[93m&\e[0m/
+}
+/^Free inodes:/{
+	s/[0-9]+$/\e[36m&\e[0m/
+}
+/^Block size:/{
+	s/Block size/\e[93mBlock\e[90m size\e[0m/
+	s/[0-9]+$/\e[93m&\e[0m/
+}
+/^Fragment size:/{
+	s/Fragment size/\e[93mFragment\e[90m size\e[0m/
+	s/[0-9]+$/\e[93m&\e[0m/
+}
+/^Cluster size:/{
+	s/Cluster size/\e[35mCluster\e[90m size\e[0m/
+	s/[0-9]+$/\e[35m&\e[0m/
+}
+/^Blocks per group:/{
+	s/[0-9]+$/\e[93m&\e[0m/
+}
+/^Fragments per group:/{
+	s/[0-9]+$/\e[93m&\e[0m/
+}
+/^Inodes per group:/{
+	s/[0-9]+$/\e[36m&\e[0m/
+}
+/^Flex block group size:/{
+	s/Flex block group size/\e[33mFlex block group\e[90m size\e[0m/
+	s/[0-9]+$/\e[33m&\e[0m/
+}
+/^Inode size:/{
+	s/Inode size/\e[36mInode\e[90m size\e[0m/
+	s/[0-9]+$/\e[36m&\e[0m/
+}
+
+/^Reserved block/{
+	s/Reserved([^:]+)/\e[31mReserved\e[90m\\1\e[0m/
+}
+/^Journal features:/{
+	s/Journal([^:]+)/\e[95mJournal\e[90m\\1\e[0m/
+}
+
+/^Group [0-9]/{
+	s/^/\e[7m/
+	s/$/\e[0m/
+	s/INODE_UNINIT/\e[36m&\e[39m/
+	s/BLOCK_UNINIT/\e[93m&\e[39m/
+}
+/^  /{
+	s/superblock/\e[95m&\e[0m/
+}
+
+s/^[^\e ][^:]+/\e[90m&\e[0m/
+s/ journal / \e[95mjournal\e[90m /
+'
