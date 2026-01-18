@@ -6,7 +6,7 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-mkfs.xfs "$@" \
+"$(basename "${0%-color}")" "$@" \
 | sed -E -e $'
 	1{
 		s/^Parameters parsed from config file /&\e[1m/
