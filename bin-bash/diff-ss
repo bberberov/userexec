@@ -8,7 +8,7 @@
 
 if   (( 2 == $# ))
 then
-	diff "$@" \
+	diff --minimal "$@" \
 	| grep -o '^[<>]' \
 	| uniq \
 	| sort \
@@ -22,7 +22,7 @@ then
 		if   [[ "${source}" != "${target}" ]]
 		then
 			op="$(
-				diff "${source}" "${target}" \
+				diff --minimal "${source}" "${target}" \
 				| grep -o '^[<>]' \
 				| uniq \
 				| sed -n -e 'H; ${ g; s/\n//g; p; }'
