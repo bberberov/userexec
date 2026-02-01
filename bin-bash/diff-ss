@@ -6,6 +6,16 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
+if
+	(( 4 == BASH_VERSINFO[0] && 2 <= BASH_VERSINFO[1] \
+	|| 4  < BASH_VERSINFO[0] \
+	))
+then
+	unicode_feat='1'
+else
+	unicode_feat='0'
+fi
+
 if   (( 2 == $# ))
 then
 	diff --minimal "$@" \
@@ -29,14 +39,37 @@ then
 			)"
 			case "${op}" in
 				'<')
-					echo "${source}" $'\e[32m< \e[0m' "${target}"
+					plain_sign=' > '
+					unicode_sign=$'\u2283'
+					op_color=$'\e[32m'
 				;;
 				'>')
-					echo "${source}" $'\e[33m >\e[0m' "${target}"
+					plain_sign=' < '
+					unicode_sign=$'\u2282'
+					op_color=$'\e[33m'
 				;;
 				*)
-					echo "${source}" $'\e[31m><\e[0m' "${target}"
+					plain_sign='>/<'
+					unicode_sign=$'\u2285'
+					op_color=$'\e[31m'
 			esac
+
+			if   (( 0 < unicode_feat ))
+			then
+				if   (( 4 <= USER_COLORTERM ))
+				then
+					echo -e "${source} ${op_color}${unicode_sign}\e[0m ${target}"
+				else
+					echo "${source} ${unicode_sign} ${target}"
+				fi
+			else
+				if   (( 4 <= USER_COLORTERM ))
+				then
+					echo -e "${source} ${op_color}${plain_sign}\e[0m ${target}"
+				else
+					echo "${source} ${plain_sign} ${target}"
+				fi
+			fi
 		fi
 	done
 fi
