@@ -1,0 +1,36 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+zypper -s 1 --no-refresh packages \
+	"$@" \
+| sed -E -e $'
+	s/^Loading repository data...$/\e[34m&\e[0m/
+	s/^Reading installed packages...$/\e[34m&\e[0m/
+
+	s/([|:\u2502\u2503\u2506\u2507\u2551] )patterns-/\\1\e[35mpatterns\e[39m-/
+
+	s/([^- ]+)(-?)([^ ]*)([[:space:]]+[|\u2502\u2503\u2506\u2507\u2551][^|\u2502\u2503\u2506\u2507\u2551]*)$/\e[32m\\1\e[39m\\2\e[36m\\3\e[39m\\4/
+
+	/^   [|:\u2502\u2503\u2506\u2507\u2551]/{
+		s/^  /\e[2m&/
+		s/[|:\u2502\u2503\u2506\u2507\u2551]/\e[0m&\e[2m/g
+	}
+
+	/^i+ [|:\u2502\u2503\u2506\u2507\u2551]/{
+		s/^i+/\e[1m&/
+		s/[|:\u2502\u2503\u2506\u2507\u2551]/\e[0m&\e[1m/g
+	}
+
+	/^.l [|:\u2502\u2503\u2506\u2507\u2551]/{
+		s/^.l/\e[31m&/
+		s/[|:\u2502\u2503\u2506\u2507\u2551]/\e[0m&\e[31m/g
+	}
+
+	s/$/\e[0m/
+' \
+| less -SF
