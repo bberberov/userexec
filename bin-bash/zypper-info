@@ -6,7 +6,7 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-zypper --no-refresh info \
+zypper -s 1 --no-refresh info \
 	--conflicts \
 	--enhances \
 	--obsoletes \
@@ -17,15 +17,20 @@ zypper --no-refresh info \
 	--supplements \
 	"$@" \
 | sed -E -e $'
-	s/^-----------------------[-]*/\e[90m&\e[0m/
+	s/^Loading repository data...$/\e[34m&\e[0m/
+	s/^Reading installed packages...$/\e[34m&\e[0m/
+
+	s/^-----------------------[-]*/\e[1m&\e[0m/
 
 	/^Name          [ ]+:/{
 		s/: /:/
 		s/[^:]+$/ \e[1m&\e[0m/
+		b
 	}
 
 	/^Version       [ ]+:/{
 		s/: ([^-]+)(-?)(.*)/: \e[32m\\1\e[0m\\2\e[36m\\3\e[0m/
+		b
 	}
 
 # 	/^Installed Size[ ]+:/{
@@ -35,6 +40,7 @@ zypper --no-refresh info \
 		s/No/\e[31m&\e[0m/
 		s/Yes/\e[32m&\e[0m/
 		s/automatically/\e[94m&\e[0m/
+		b
 	}
 
 	/^Status        [ ]+:/{
@@ -42,55 +48,105 @@ zypper --no-refresh info \
 		s/up-to-date/\e[32m&\e[0m/
 		s/out-of-date/\e[93m&\e[0m/
 		s/version ([^-]+)(-?)([^ ]*)/version \e[32m\\1\e[0m\\2\e[36m\\3\e[0m/
+		b
 	}
 
 	/^Summary       [ ]+:/{
 		s/: /:/
 		s/[^:]+$/ \e[1m&\e[0m/
+		b
 	}
 
 	/^Description   [ ]+:/{
 		a
+		b
 	}
 
-	/^(Provides   |Requires   |Conflicts  |Obsoletes  |Recommends |Suggests   |Supplements|Enhances   )   [ ]+:/{
-		/: ---/d
+	/^(Provides   |Requires   |Conflicts  |Obsoletes  |Recommends |Suggests   |Supplements|Enhances   )   [ ]+:/,/^Information for /{
+		/^(Provides   |Requires   |Conflicts  |Obsoletes  |Recommends |Suggests   |Supplements|Enhances   )   [ ]+:/{
+			/: ---/{
+				d
+				b
+			}
 
-		i
+			i
 
-		/: [^-[]/{
-			s/\: /: [1]\\n    /
-			P
-			D
+			/: [^-[]/{
+				s/\: /: [1]\\n    /
+				P
+				D
+			}
 		}
-	}
-	/^(Provides   |Requires   |Conflicts  |Obsoletes  |Recommends |Suggests   |Supplements|Enhances   )   [ ]+:/,${
+
+		# Source packages
+		/^(Builds binary package :|Contents        :)/{
+			i
+			a
+		}
+		/^Builds binary package :/,/^Information for /{
+			b
+		}
+
+		/^Contents        :/,/^Information for /{
+			s/([|:\u2502\u2503\u2506\u2507\u2551] )patterns-/\\1\e[35mpatterns\e[39m-/
+
+			s/Required/\e[91m&\e[0m/
+			s/Recommended/\e[33m&\e[0m/
+			s/Suggested/\e[94m&\e[0m/
+
+			b
+		}
+
 		/^    \//{
 			s@/(usr/sbin|usr/bin|sbin|bin)@\e[34m&\e[0m@
 			s@[^/ ]+$@\e[32m&\e[0m@
+			b
 		}
 
 		/\.so/{
 			s/[^ ]+\.so[^(]*/\e[36m&\e[0m/
+			b
 		}
 
 		/^    (appdata|application|metainfo|product)\(/{
 			s/(appdata|application|metainfo|product)/\e[35m&\e[0m/
+			b
 		}
 
-		/^    (pattern|pattern-category|pattern-icon|pattern-order|pattern-visible)\(\)/{
-			s/(pattern|pattern-category|pattern-icon|pattern-order|pattern-visible)/\e[35m&\e[0m/
+		/^    (autopattern|pattern|pattern-category|pattern-icon|pattern-order|pattern-visible)\(\)/{
+			s/(autopattern|pattern|pattern-category|pattern-icon|pattern-order|pattern-visible)/\e[35m&\e[0m/
 			s/(=|==|<|>|<=|>=) (.+)/\e[1m\\1\e[0m \e[1m\\2\e[0m/
+			b
+		}
+		/^    (pattern):/{
+			s/(pattern)/\e[35m&\e[0m/
+			s/(=|==|<|>|<=|>=) ([^-]+)(-?)(.*)/\e[1m\\1\e[0m \e[32m\\2\e[0m\\3\e[36m\\4\e[0m/
+			b
 		}
 
-		/^    (mimehandler|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|service|user)\(/{
-			s/(mimehandler|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|service|user)/\e[33m&\e[0m/
+		/^    (firmware|kmod|ksym|multiversion)\(/{
+			s/(firmware|kmod|ksym|multiversion)/\e[33m&\e[0m/
+			s/(=|==|<|>|<=|>=) (.+)/\e[1m\\1\e[0m \e[1m\\2\e[0m/
+			b
 		}
 
-		/^    [[:alpha:]]/{
-			s/[-[:alnum:]_+]+/\e[31m&\e[0m/
+		/^    (namespace:modalias|modalias)\(/{
+			s/(namespace:modalias|modalias)/\e[33m&\e[0m/
+			s/\(pci:v0000([][:xdigit:][]+)d0000([][:xdigit:][]+)/(pci:v0000\e[1m\\1\e[0md0000\e[1m\\2\e[0m/
+			s/\(usb:v([][:xdigit:][]+)p([][:xdigit:][]+)d/(usb:v\e[1m\\1\e[0mp\e[1m\\2\e[0md/
+			b
+		}
+
+		/^    (cmake|config|group|mimehandler|perl|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|pkgconfig|rpm_macro|service|user)\(/{
+			s/(cmake|config|group|mimehandler|perl|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|pkgconfig|rpm_macro|service|user)/\e[33m&\e[0m/
+			b
+		}
+
+		/^    [[:alnum:]]/{
+			s/[-[:alnum:]_+.]+/\e[31m&\e[0m/
 			s/-devel\e/\e[2m&/
 			s/(=|==|<|>|<=|>=) ([^-]+)(-?)(.*)/\e[1m\\1\e[0m \e[32m\\2\e[0m\\3\e[36m\\4\e[0m/
+			b
 		}
 
 		# Dependencies in parentheses
@@ -98,8 +154,6 @@ zypper --no-refresh info \
 
 			# Parentheses spacing
 			s/ \(/ ( /g
-			s/\)\)\)\)/) ) ) )/g
-			s/\)\)\)/) ) )/g
 			s/\)\)/) )/g
 
 			s@ (/(usr/sbin|usr/bin|sbin|bin))@ \e[34m\\1\e[0m@
@@ -109,16 +163,29 @@ zypper --no-refresh info \
 
 			s/ (appdata|application|metainfo|product)/ \e[35m\\1\e[0m/g
 
-			s/ (pattern|pattern-category|pattern-icon|pattern-order|pattern-visible)/ \e[35m\\1\e[0m/g
+			s/ (autopattern|pattern|pattern-category|pattern-icon|pattern-order|pattern-visible)/ \e[35m\\1\e[0m/g
 
-			s/ (mimehandler|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|service|user)/ \e[33m\\1\e[0m/g
+			s/ (firmware|kmod|ksym|multiversion)/ \e[33m\\1\e[0m/g
 
-			s/ (\()/ \e[1m\\1\e[0m/g
-			s/ (\))/ \e[1m\\1\e[0m/g
+			s/ (namespace:modalias|modalias)/ \e[33m\\1\e[0m/g
+
+			s/ (cmake|config|group|mimehandler|perl|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|pkgconfig|rpm_macro|service|user)/ \e[33m\\1\e[0m/g
+
 			s/ (if|or|and|=|==|<|>|<=|>=) / \e[1m\\1\e[0m /g
 
-			s/ ([-[:alnum:]_+]+)/ \e[31m\\1\e[0m/
+			s/\(pci:v0000([][:xdigit:][]+)d0000([][:xdigit:][]+)/(pci:v0000\e[1m\\1\e[0md0000\e[1m\\2\e[0m/
+			s/\(usb:v([][:xdigit:][]+)p([][:xdigit:][]+)d/(usb:v\e[1m\\1\e[0mp\e[1m\\2\e[0md/
+
+			s/ ([-[:alnum:]_+.]+)/ \e[31m\\1\e[0m/g
 			s/-devel\e/\e[2m&/
+
+			# Parentheses end
+			s/\e\[0m\)/\e[0m )/
+
+			# Parentheses color
+			s/ (\()/ \e[1m\\1\e[0m/g
+			s/ (\))/ \e[1m\\1\e[0m/g
 		}
 	}
-'
+' \
+| less -SF
