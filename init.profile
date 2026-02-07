@@ -18,11 +18,19 @@ else
 	origin="$( realpath "$( dirname "${0}" )" )"
 fi
 
-check_and_set()
+check_and_set_pre()
 {
 	if   test -d "${1}"
 	then
 		new_PATH="${1}:${new_PATH}"
+	fi
+}
+
+check_and_set_post()
+{
+	if   test -d "${1}"
+	then
+		new_PATH="${new_PATH}:${1}"
 	fi
 }
 
@@ -43,45 +51,45 @@ new_PATH="${new_PATH#:}"
 new_PATH="${new_PATH%:}"
 
 # Generic sh
-check_and_set "${origin}/bin-sh"
+check_and_set_pre "${origin}/bin-sh"
 
 # Bash, with versions
 if   test -n "${BASH_VERSION}"
 then
-	check_and_set "${origin}/bin-bash"
+	check_and_set_pre "${origin}/bin-bash"
 
 	if   (( 3 <= BASH_VERSINFO[0] ))
 	then
 		# NOTE Released on 2004-07-27
-		check_and_set "${origin}/bin-bash3"
+		check_and_set_pre "${origin}/bin-bash3"
 
 		if   (( 1 <= BASH_VERSINFO[1] ))
 		then
 			# NOTE Released on 2005-12-09
-			check_and_set "${origin}/bin-bash3.1"
+			check_and_set_pre "${origin}/bin-bash3.1"
 		fi
 
 		if   (( 2 <= BASH_VERSINFO[1] ))
 		then
 			# NOTE Released on 2006-10-12
-			check_and_set "${origin}/bin-bash3.2"
+			check_and_set_pre "${origin}/bin-bash3.2"
 		fi
 
 		if   (( 4 <= BASH_VERSINFO[0] ))
 		then
 			# NOTE Released on 2009-02-20
-			check_and_set "${origin}/bin-bash4"
+			check_and_set_pre "${origin}/bin-bash4"
 
 			if   (( 2 <= BASH_VERSINFO[1] ))
 			then
 				# NOTE Released on 2011-02-14
-				check_and_set "${origin}/bin-bash4.2"
+				check_and_set_pre "${origin}/bin-bash4.2"
 			fi
 
 			if   (( 5 <= BASH_VERSINFO[0] ))
 			then
 				# NOTE Released on 2019-01-07
-				check_and_set "${origin}/bin-bash5"
+				check_and_set_pre "${origin}/bin-bash5"
 
 			fi
 		fi
@@ -91,11 +99,21 @@ fi
 # Python
 if   which python3 > /dev/null 2>&1
 then
-	check_and_set "${origin}/bin-python3"
+	check_and_set_pre "${origin}/bin-python3"
 fi
 
 # Local /bin
-check_and_set "${HOME}/.local/bin"
-check_and_set "${HOME}/bin"
+check_and_set_pre "${HOME}/.local/bin"
+check_and_set_pre "${HOME}/bin"
 
 export PATH="${new_PATH}"
+
+# Clean if/when re-sourcing, Bash 2.0 compatible
+new_PATH=":${MANPATH}:"
+pattern=":${origin}/man:";  new_PATH="${new_PATH/${pattern}/:}"
+new_PATH="${new_PATH#:}"
+new_PATH="${new_PATH%:}"
+
+check_and_set_post "${origin}/man"
+
+export MANPATH="${new_PATH}"
