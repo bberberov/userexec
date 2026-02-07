@@ -1,0 +1,140 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ -n "${NO_PII}" ]]
+then
+	no_pii_filter='
+		/^Serial Number:/d
+		/^LU WWN Device Id:/d
+	'
+else
+	no_pii_filter=''
+fi
+
+smartctl "$@" \
+| sed -E -e $'
+	/^=== START OF INFORMATION SECTION ===/,${
+		'"${no_pii_filter}"$'
+
+		/^Model Family:/{
+			s/HGST/\e[97;100m & \e[0m/
+			/Samsung/{
+				s/Samsung/\e[97;44m & \e[0m/
+
+				s/EVO ([0-9])/\e[33mEVO\e[0m \\1/
+				s/EVO Plus/\e[94m&\e[0m/
+				s/PRO/\e[91m&\e[0m/
+			}
+			s/San[Dd]isk/\e[91;107m & \e[0m/
+			s/Toshiba/\e[91;107m & \e[0m/
+			/Western Digital/{
+				s/Western Digital/\e[97;44m & \e[0m/
+
+				s/Scorpio Black/\e[30;107m&\e[0m/
+			}
+		}
+		/^Rotation Rate:/{
+			s/5400/\e[93m&\e[0m/
+			s/5900/\e[33m&\e[0m/
+			s/7200/\e[32m&\e[0m/
+			s/10000/\e[36m&\e[0m/
+			s/15000/\e[35m&\e[0m/
+		}
+		/^Device is:/{
+			s/In smartctl database/\e[32m&\e[0m/
+		}
+		/^SATA Version is:/{
+			s:3\.0 Gb/s:\e[31m&\e[0m:
+			s:6\.0 Gb/s:\e[33m&\e[0m:
+		}
+		/^SMART support is:/{
+			s/(Available|Enabled)/\e[32m&\e[0m/
+		}
+	}
+
+	/^=== START OF READ SMART DATA SECTION ===/,${
+		/^ID.*/{
+			s/^/\e[97;100m/
+			s/$/\e[0m/
+			b
+		}
+		/^  4 Start_Stop_Count/{
+			s/Start_Stop_Count/\e[1m&\e[0m/
+			s/[^ ]+$/\e[1m&\e[0m times/
+			b
+		}
+		/^  5 Reallocated_Sector_Ct/{
+			s/Reallocated_Sector_Ct/\e[31m&\e[0m/
+
+			s/ 0$/ \e[32m0\e[0m sectors/
+			s/ ([1-9])$/ \e[31m\\1\e[0m sectors/
+			s/ ([0-9]+[0-9])$/ \e[31m\\1\e[0m sectors/
+			b
+		}
+		/^  9 Power_On_Hours/{
+			s/Power_On_Hours/\e[1m&\e[0m/
+			s/[^ ]+$/\e[1m&\e[0m hours/
+			b
+		}
+		/^ 12 Power_Cycle_Count/{
+			s/Power_Cycle_Count/\e[1m&\e[0m/
+			s/[^ ]+$/\e[1m&\e[0m times/
+			b
+		}
+		/^192 Power-Off_Retract_Count/{
+			s/Power-Off_Retract_Count/\e[1m&\e[0m/
+			s/[^ ]+$/\e[1m&\e[0m times/
+			b
+		}
+		/^193 Load_Cycle_Count/{
+			s/Load_Cycle_Count/\e[1m&\e[0m/
+			s/[^ ]+$/\e[1m&\e[0m times/
+			b
+		}
+		/^194 Temperature_Celsius/{
+			s/Temperature_Celsius/\e[1m&\e[0m/
+
+			s/ ([0-9])$/ \e[30;104m\\1\e[0m C/
+			s/ ([012][0-9])$/ \e[30;104m\\1\e[0m C/
+			s/ ([3][0-9])$/ \e[30;42m\\1\e[0m C/
+			s/ ([4][0-5])$/ \e[30;42m\\1\e[0m C/
+			s/ ([4][6-9])$/ \e[30;43m\\1\e[0m C/
+			s/ ([5-9][0-9])$/ \e[30;41m\\1\e[0m C/
+			b
+		}
+		/^196 Reallocated_Event_Count/{
+			s/Reallocated_Event_Count/\e[31m&\e[0m/
+
+			s/ 0$/ \e[32m0\e[0m times/
+			s/ ([1-9])$/ \e[31m&\e[0m times/
+			s/ ([0-9]+[0-9])$/ \e[31m&\e[0m times/
+			b
+		}
+		/^198 Offline_Uncorrectable/{
+			s/Offline_Uncorrectable/\e[31m&\e[0m/
+
+			s/ 0$/ \e[32m0\e[0m sectors/
+			s/ ([1-9])$/ \e[31m&\e[0m sectors/
+			s/ ([0-9]+[0-9])$/ \e[31m&\e[0m sectors/
+			b
+		}
+		/^199 UDMA_CRC_Error_Count/{
+			s/UDMA_CRC_Error_Count/\e[31m&\e[0m/
+
+			s/ 0$/ \e[32m0\e[0m errors/
+			s/ ([1-9])$/ \e[31m&\e[0m errors/
+			s/ ([0-9]+[0-9])$/ \e[31m&\e[0m errors/
+			b
+		}
+		/^240 Head_Flying_Hours/{
+			s/Head_Flying_Hours/\e[1m&\e[0m/
+			s/[^ ]+$/\e[1m&\e[0m hours/
+			b
+		}
+	}
+'
