@@ -21,7 +21,7 @@ smartctl "$@" \
 	/^=== START OF INFORMATION SECTION ===/,${
 		'"${no_pii_filter}"$'
 
-		/^Model Family:/{
+		/^(Model Family:|Device Model:)/{
 			s/HGST/\e[97;100m & \e[0m/
 			/Samsung/{
 				s/Samsung/\e[97;44m & \e[0m/
@@ -31,10 +31,17 @@ smartctl "$@" \
 				s/PRO/\e[91m&\e[0m/
 			}
 			s/San[Dd]isk/\e[91;107m & \e[0m/
+			/Seagate/{
+				s/Seagate/\e[30;47m & \e[0m/
+
+				s/Barracuda/\e[92m&\e[0m/
+			}
 			s/Toshiba/\e[91;107m & \e[0m/
 			/Western Digital/{
 				s/Western Digital/\e[97;44m & \e[0m/
 
+				s/Caviar Blue/\e[97;104m&\e[0m/
+				s/Caviar Green/\e[97;102m&\e[0m/
 				s/Scorpio Black/\e[30;107m&\e[0m/
 			}
 		}
@@ -49,11 +56,17 @@ smartctl "$@" \
 			s/In smartctl database/\e[32m&\e[0m/
 		}
 		/^SATA Version is:/{
-			s:3\.0 Gb/s:\e[31m&\e[0m:
-			s:6\.0 Gb/s:\e[33m&\e[0m:
+			s:3\.0 Gb/s:\e[31m&\e[0m:g
+			s:6\.0 Gb/s:\e[33m&\e[0m:g
 		}
 		/^SMART support is:/{
 			s/(Available|Enabled)/\e[32m&\e[0m/
+		}
+
+		# NVME
+		/^Model Number:/{
+			s/SAMSUNG/\e[97;44m & \e[0m/
+			s/TOSHIBA/\e[91;107m & \e[0m/
 		}
 	}
 
@@ -83,7 +96,7 @@ smartctl "$@" \
 		}
 		/^ 12 Power_Cycle_Count/{
 			s/Power_Cycle_Count/\e[1m&\e[0m/
-			s/[^ ]+$/\e[1m&\e[0m times/
+			s/[^ ]+$/\e[1m&\e[0m cycles/
 			b
 		}
 		/^192 Power-Off_Retract_Count/{
@@ -134,6 +147,42 @@ smartctl "$@" \
 		/^240 Head_Flying_Hours/{
 			s/Head_Flying_Hours/\e[1m&\e[0m/
 			s/[^ ]+$/\e[1m&\e[0m hours/
+			b
+		}
+	}
+	/^=== START OF SMART DATA SECTION ===/,${
+		/^(Temperature:|Temperature Sensor 1:|Temperature Sensor 2:)/{
+			s/^(Temperature:|Temperature Sensor 1:|Temperature Sensor 2:)/\e[1m&\e[0m/
+
+			s/ ([0-9]) Celsius$/ \e[30;104m\\1\e[0m Celsius/
+			s/ ([012][0-9]) Celsius$/ \e[30;104m\\1\e[0m Celsius/
+			s/ ([3][0-9]) Celsius$/ \e[30;42m\\1\e[0m Celsius/
+			s/ ([4][0-5]) Celsius$/ \e[30;42m\\1\e[0m Celsius/
+			s/ ([4][6-9]) Celsius$/ \e[30;43m\\1\e[0m Celsius/
+			s/ ([5-9][0-9]) Celsius$/ \e[30;41m\\1\e[0m Celsius/
+			b
+		}
+		/^Data Units Written:/{
+			s/^Data Units Written:/\e[1m&\e[0m/
+			s/([0-9.,]+) ([KMGTPEZYRQ])(B|iB)/\e[1m\\1 \e[36m\\2\e[39m\\3\e[0m/
+			b
+		}
+		/^Power Cycles:/{
+			s/^Power Cycles:/\e[1m&\e[0m/
+			s/[^ ]+$/\e[1m&\e[0m cycles/
+			b
+		}
+		/^Power On Hours:/{
+			s/^Power On Hours:/\e[1m&\e[0m/
+			s/[^ ]+$/\e[1m&\e[0m hours/
+			b
+		}
+		/^Media and Data Integrity Errors:/{
+			s/^Media and Data Integrity Errors:/\e[1m&\e[0m/
+
+			s/ 0$/ \e[32m0\e[0m errors/
+			s/ ([1-9])$/ \e[31m&\e[0m errors/
+			s/ ([0-9,]+[0-9])$/ \e[31m&\e[0m errors/
 			b
 		}
 	}
