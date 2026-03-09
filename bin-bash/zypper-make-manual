@@ -1,0 +1,32 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+if   [[ -n "$1" ]]
+then
+	target_package="$(
+		command zypper -s 0 --no-refresh packages --autoinstalled \
+		| sed -n -E -e $'
+			/[[:space:]]'"${1}"$'[[:space:]]/{
+				s/.*\|[[:space:]]*([^| ]+)[[:space:]]*\|[[:space:]]*([^| ]+)[[:space:]]*\|[[:space:]]*([^| ]+)[[:space:]]*$/\\1/p
+			}
+		'
+	)"
+fi
+
+if   [[ -n "${target_package}" ]]
+then
+	echo "Making ${target_package} manually installed" > /dev/stderr
+
+	sed -i \
+		-e "/^${target_package}\$/d" \
+		-e "1s/^#.*/# Updated by zypper-make-automatic on $(date)/" \
+		/var/lib/zypp/AutoInstalled
+else
+	echo "${1} is not automatically installed.  Skipping." > /dev/stderr
+	exit 1
+fi
