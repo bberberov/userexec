@@ -99,6 +99,14 @@ smartctl "$@" \
 			s/[^ ]+$/\e[1m&\e[0m cycles/
 			b
 		}
+		/^183 Runtime_Bad_Block/{
+			s/Runtime_Bad_Block/\e[93m&\e[0m/
+
+			s/ 0$/ \e[32m0\e[0m sectors/
+			s/ ([1-9])$/ \e[93m\\1\e[0m sectors/
+			s/ ([0-9]+[0-9])$/ \e[93m\\1\e[0m sectors/
+			b
+		}
 		/^192 Power-Off_Retract_Count/{
 			s/Power-Off_Retract_Count/\e[1m&\e[0m/
 			s/[^ ]+$/\e[1m&\e[0m times/
@@ -112,41 +120,52 @@ smartctl "$@" \
 		/^194 Temperature_Celsius/{
 			s/Temperature_Celsius/\e[1m&\e[0m/
 
-			s/ ([0-9])$/ \e[30;104m\\1\e[0m C/
-			s/ ([012][0-9])$/ \e[30;104m\\1\e[0m C/
-			s/ ([3][0-9])$/ \e[30;42m\\1\e[0m C/
-			s/ ([4][0-5])$/ \e[30;42m\\1\e[0m C/
-			s/ ([4][6-9])$/ \e[30;43m\\1\e[0m C/
-			s/ ([5-9][0-9])$/ \e[30;41m\\1\e[0m C/
+			/[0-9]$/{
+				s/ ([0-9])$/ \e[30;104m\\1\e[0m C/
+				s/ ([012][0-9])$/ \e[30;104m\\1\e[0m C/
+				s/ ([3][0-9])$/ \e[30;42m\\1\e[0m C/
+				s/ ([4][0-5])$/ \e[30;42m\\1\e[0m C/
+				s/ ([4][6-9])$/ \e[30;43m\\1\e[0m C/
+				s/ ([5-9][0-9])$/ \e[30;41m\\1\e[0m C/
+			}
+			/\)$/{
+				s/ ([0-9]) (\([0-9 ]+\))$/ \e[30;104m\\1\e[0m C \\2/
+				s/ ([012][0-9]) (\([0-9 ]+\))$/ \e[30;104m\\1\e[0m C \\2/
+				s/ ([3][0-9]) (\([0-9 ]+\))$/ \e[30;42m\\1\e[0m C \\2/
+				s/ ([4][0-5]) (\([0-9 ]+\))$/ \e[30;42m\\1\e[0m C \\2/
+				s/ ([4][6-9]) (\([0-9 ]+\))$/ \e[30;43m\\1\e[0m C \\2/
+				s/ ([5-9][0-9]) (\([0-9 ]+\))$/ \e[30;41m\\1\e[0m C \\2/
+			}
 			b
 		}
 		/^196 Reallocated_Event_Count/{
 			s/Reallocated_Event_Count/\e[31m&\e[0m/
 
 			s/ 0$/ \e[32m0\e[0m times/
-			s/ ([1-9])$/ \e[31m&\e[0m times/
-			s/ ([0-9]+[0-9])$/ \e[31m&\e[0m times/
+			s/ ([1-9])$/ \e[31m\\1\e[0m times/
+			s/ ([0-9]+[0-9])$/ \e[31m\\1\e[0m times/
 			b
 		}
 		/^198 Offline_Uncorrectable/{
 			s/Offline_Uncorrectable/\e[31m&\e[0m/
 
 			s/ 0$/ \e[32m0\e[0m sectors/
-			s/ ([1-9])$/ \e[31m&\e[0m sectors/
-			s/ ([0-9]+[0-9])$/ \e[31m&\e[0m sectors/
+			s/ ([1-9])$/ \e[31m\\1\e[0m sectors/
+			s/ ([0-9]+[0-9])$/ \e[31m\\1\e[0m sectors/
 			b
 		}
 		/^199 UDMA_CRC_Error_Count/{
 			s/UDMA_CRC_Error_Count/\e[31m&\e[0m/
 
 			s/ 0$/ \e[32m0\e[0m errors/
-			s/ ([1-9])$/ \e[31m&\e[0m errors/
-			s/ ([0-9]+[0-9])$/ \e[31m&\e[0m errors/
+			s/ ([1-9])$/ \e[31m\\1\e[0m errors/
+			s/ ([0-9]+[0-9])$/ \e[31m\\1\e[0m errors/
 			b
 		}
 		/^240 Head_Flying_Hours/{
 			s/Head_Flying_Hours/\e[1m&\e[0m/
-			s/[^ ]+$/\e[1m&\e[0m hours/
+			s/[0-9]+$/\e[1m&\e[0m hours/
+			s/([0-9.]+h)\+([0-9.]+m)\+([0-9.]+s)$/\e[1m\\1\e[0m \e[1m\\2\e[0m \e[1m\\3\e[0m /
 			b
 		}
 	}
