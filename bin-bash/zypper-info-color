@@ -130,6 +130,12 @@ zypper -s 1 --no-refresh info \
 			b
 		}
 
+		/^    (python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist)\(/{
+			s/(python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist)/\e[33m&\e[0m/
+			s/(=|==|<|>|<=|>=) ([^-]+)(-?)(.*)/\e[1m\\1\e[0m \e[32m\\2\e[0m\\3\e[36m\\4\e[0m/
+			b
+		}
+
 		/^    (namespace:modalias|modalias)\(/{
 			s/(namespace:modalias|modalias)/\e[33m&\e[0m/
 			s/\(pci:v0000([][:xdigit:][]+)d0000([][:xdigit:][]+)/(pci:v0000\e[1m\\1\e[0md0000\e[1m\\2\e[0m/
@@ -137,8 +143,8 @@ zypper -s 1 --no-refresh info \
 			b
 		}
 
-		/^    (cmake|config|group|mimehandler|perl|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|pkgconfig|rpm_macro|service|user)\(/{
-			s/(cmake|config|group|mimehandler|perl|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|pkgconfig|rpm_macro|service|user)/\e[33m&\e[0m/
+		/^    (cmake|config|group|mimehandler|perl|pkgconfig|rpm_macro|service|user)\(/{
+			s/(cmake|config|group|mimehandler|perl|pkgconfig|rpm_macro|service|user)/\e[33m&\e[0m/
 			b
 		}
 
@@ -167,9 +173,11 @@ zypper -s 1 --no-refresh info \
 
 			s/ (firmware|kmod|ksym|multiversion)/ \e[33m\\1\e[0m/g
 
+			s/ (python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist)/ \e[33m\\1\e[0m/g
+
 			s/ (namespace:modalias|modalias)/ \e[33m\\1\e[0m/g
 
-			s/ (cmake|config|group|mimehandler|perl|python|python[2-9]dist|python[2-9]\.[0-9][0-9]?dist|pkgconfig|rpm_macro|service|user)/ \e[33m\\1\e[0m/g
+			s/ (cmake|config|group|mimehandler|perl|pkgconfig|rpm_macro|service|user)/ \e[33m\\1\e[0m/g
 
 			s/ (if|or|and|=|==|<|>|<=|>=) / \e[1m\\1\e[0m /g
 
