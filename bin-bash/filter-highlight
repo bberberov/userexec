@@ -28,10 +28,11 @@ do
 			then
 				blockdev=1
 				sedfilter="${sedfilter}"$'
-s@(^|[[:space:]])(/dev/[hsv]d[a-z][0-9]*)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
-s@(^|[[:space:]])(/dev/sr[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
-s@(^|[[:space:]])(/dev/nvme[0-9]+n[0-9]+p[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
-s@(^|[[:space:]])(/dev/shm)([[:space:]]|$)@\\1\e[92m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/[hsv]d[a-z][0-9]*)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/sr[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/nvme[0-9]+n[0-9]+p[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/nvme[0-9]+n[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/shm)([[:space:]]|$)@\\1\e[92m\\2\e[39m\\3@g
 '
 			fi
 		;;
