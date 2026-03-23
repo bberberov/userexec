@@ -2,11 +2,12 @@
 
 A collection of scripts and tools.  They are either wrappers, too small for an independent package, or too early in their development.
 
-## Usage
+## Requirements
 
-These scripts and tools assume that the `which` command is always available!  The availability of other commands it tested with it.  Simple scripts which use `sed` will generate normal "not found" errors.
-
-The minimum supported Bash version is 2.02, from 1998-04-18.
+- `bash` version >= 2.02, from 1998-04-18
+- `less` version >= 340, for `-F`, `-R` and Unicode support
+- `sed`, best is GNU `sed`
+- `which`, to test command availability
 
 ## Goals
 
