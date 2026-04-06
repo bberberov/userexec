@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2025 Boian Berberov
+# Copyright © 2025, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -15,7 +15,7 @@ user_mirror_file="${XDG_CONFIG_DIR:-${HOME}/.config}/user_mirrors/Ubuntu_release
 mirror="${2:-${user_mirror:-https://releases.ubuntu.com}}"
 
 dll=''
-for ver in '24.04' '25.10'
+for ver in '24.04' '26.04'
 do
 	dll+=" ${mirror}/${ver}/"
 done
