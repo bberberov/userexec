@@ -6,13 +6,13 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-profile='shared'
+domain='public'
 userdir="/srv/user/${SUDO_USER:-${USER}}"
 repo_name='userexec.git'
 repo_path="github.com/bberberov/${repo_name}"
 perm_repo="${userdir}/vcs/${repo_path}"
-repo_tree_f='${HOME}/user/exec/'"${profile}"
-repo_tree_e="${HOME}/user/exec/${profile}"
+repo_tree_f='${HOME}/user/exec/'"${domain}"
+repo_tree_e="${HOME}/user/exec/${domain}"
 
 # Check for necesary commands
 for cmd in \
