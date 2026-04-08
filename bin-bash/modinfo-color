@@ -1,0 +1,39 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+/usr/sbin/modinfo "$@" \
+| uniq \
+| sed -E -e $'
+	/^description:/{
+		s/.{16}/&\e[1m/
+		s/$/\e[0m/
+	}
+	/^alias:/{
+		/pci:/{
+			s/\*/\e[1m&\e[0m/g
+			s/v0000([][:xdigit:][]+)d/v0000\e[1m\\1\e[0md/
+			s/d0000([][:xdigit:][]+)sv/d0000\e[1m\\1\e[0msv/
+			s/sv0000([][:xdigit:][]+)sd/sv0000\e[1m\\1\e[0msd/
+			s/sd0000([][:xdigit:][]+)bc/sd0000\e[1m\\1\e[0mbc/
+		}
+		/usb:/{
+			s/\*/\e[1m&\e[0m/g
+			s/v([][:xdigit:][]+)p/v\e[1m\\1\e[0mp/
+			s/p([][:xdigit:][]+)d/p\e[1m\\1\e[0md/
+		}
+	}
+	/^depends:/{
+		s/.{16}/&\e[1m/
+		s/,/\e[0m, \e[1m/g
+		s/$/\e[0m/
+	}
+	/^parm:/{
+		s/(.{16})([^:]+):/\\1\e[1m\\2\e[0m: /
+		s/$/\e[0m/
+	}
+'
