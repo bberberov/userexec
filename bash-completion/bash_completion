@@ -6,6 +6,35 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
+_comp_user_dir_reuse_fn()
+{
+	local filename="${1}"
+	local funcname="${2}"
+	local execname="${3}"
+
+	# Don's source if already sourced
+	if   [[ 'function' == "$(type -t "${funcname}")" ]]
+	then
+		complete -F "${funcname}" "${execname}"
+		return
+	fi
+
+	for bcdir in ${BASH_COMPLETION_USER_DIR//:/$'\n'}
+	do
+		if   [[ -r "${bcdir}/completions/${filename}" ]]
+		then
+			source "${bcdir}/completions/${filename}"
+
+			# Check after sourcing
+			if   [[ 'function' == "$(type -t "${funcname}")" ]]
+			then
+				complete -F "${funcname}" "${execname}"
+				return
+			fi
+		fi
+	done
+}
+
 #
 # Simple completions
 #
