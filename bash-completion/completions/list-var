@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2025 Boian Berberov
+# Copyright © 2025, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -24,12 +24,11 @@ _comp_cmd_list-var()
 		[[ -n "${!var}" ]] && vars+=" ${var}"
 	done
 
-	case "${COMP_CWORD}" in
-		1)
-			COMPREPLY=( $(compgen -W "${vars}" -- "${COMP_WORDS[COMP_CWORD]}") )
-			return 0
-		;;
-	esac
+	if   (( 1 == COMP_CWORD ))
+	then
+		compopt -o nospace
+		COMPREPLY=( $(compgen -W "${vars}" -- "${COMP_WORDS[COMP_CWORD]}") )
+	fi
 
 	return 0
 } && complete -F _comp_cmd_list-var list-var
