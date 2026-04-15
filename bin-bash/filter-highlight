@@ -7,6 +7,7 @@
 # SPDX-License-Identifier: EUPL-1.2
 
 opt_blockdev=0
+opt_blockdev_links=0
 opt_filesys=0
 
 opt_numbers=0
@@ -29,10 +30,23 @@ do
 				opt_blockdev=1
 				sedfilter="${sedfilter}"$'
 s@(^|[[:space:]\u2500-\u257F])(/dev/[hsv]d[a-z][0-9]*)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
-s@(^|[[:space:]\u2500-\u257F])(/dev/sr[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
-s@(^|[[:space:]\u2500-\u257F])(/dev/nvme[0-9]+n[0-9]+p[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/dm-[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/md[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/md[0-9]+p[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
 s@(^|[[:space:]\u2500-\u257F])(/dev/nvme[0-9]+n[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/nvme[0-9]+n[0-9]+p[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
 s@(^|[[:space:]\u2500-\u257F])(/dev/shm)([[:space:]]|$)@\\1\e[92m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/sr[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+'
+			fi
+		;;
+		--blockdev-links)
+			if   (( 0 == opt_blockdev_links ))
+			then
+				opt_blockdev_links=1
+				sedfilter="${sedfilter}"$'
+s@(^|[[:space:]\u2500-\u257F])(/dev/datavg/[^/[:space:]]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
+s@(^|[[:space:]\u2500-\u257F])(/dev/mapper/[^/[:space:]]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
 '
 			fi
 		;;
