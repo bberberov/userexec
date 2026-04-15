@@ -6,17 +6,17 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-blockdev=0
-filesys=0
+opt_blockdev=0
+opt_filesys=0
 
-numbers=0
-percents=0
-units=0
+opt_numbers=0
+opt_percents=0
+opt_units=0
 
-header=0
-box=0
+opt_header=0
+opt_box=0
 
-show=0
+opt_show=0
 
 sedfilter=''
 
@@ -24,9 +24,9 @@ for opt in "$@"
 do
 	case "${opt}" in
 		--blockdev)
-			if   (( blockdev < 1 ))
+			if   (( 0 == opt_blockdev ))
 			then
-				blockdev=1
+				opt_blockdev=1
 				sedfilter="${sedfilter}"$'
 s@(^|[[:space:]\u2500-\u257F])(/dev/[hsv]d[a-z][0-9]*)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
 s@(^|[[:space:]\u2500-\u257F])(/dev/sr[0-9]+)([[:space:]]|$)@\\1\e[93m\\2\e[39m\\3@g
@@ -37,9 +37,9 @@ s@(^|[[:space:]\u2500-\u257F])(/dev/shm)([[:space:]]|$)@\\1\e[92m\\2\e[39m\\3@g
 			fi
 		;;
 		--filesys)
-			if   (( filesys < 1 ))
+			if   (( 0 == opt_filesys ))
 			then
-				filesys=1
+				opt_filesys=1
 				sedfilter="${sedfilter}"$'
 s/(^|[[:space:]])(bcachefs|btrfs|exfat|ext[234]|f2fs|hfsplusjfs|vfat|udf|xfs|zfs)([[:space:]]|$)/\\1\e[32m\\2\e[39m\\3/g
 s/(^|[[:space:]])(tmpfs)([[:space:]]|$)/\\1\e[95m\\2\e[39m\\3/g
@@ -49,9 +49,9 @@ s/(^|[[:space:]])(binfmt_misc|bpf|cgroup2|configfs|debugfs|devpts|devtmpfs|efiva
 			fi
 		;;
 		--numbers)
-			if   (( numbers < 1 ))
+			if   (( 0 == opt_numbers ))
 			then
-				numbers=1
+				opt_numbers=1
 				sedfilter="${sedfilter}"$'
 s/(^|[[:space:]])([-0])([[:space:]]|$)/\\1\e[90m\\2\e[39m\\3/g
 s/(^|[[:space:]])([0-9]{1,3})([0-9]{3})([[:space:]]|$)/\\1\\2\e[90m\\3\e[39m\\4/g
@@ -62,9 +62,9 @@ s/(^|[[:space:]])([0-9]{1,3})([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{3})([[:space:]
 			fi
 		;;
 		--percents)
-			if   (( percents < 1 ))
+			if   (( 0 == opt_percents ))
 			then
-				percents=1
+				opt_percents=1
 				sedfilter="${sedfilter}"$'
 s/(^|[[:space:]])([9][0-9])%([[:space:]]|$)/\\1\e[31m\\2\e[39m%\\3/g
 s/(^|[[:space:]])([8][0-9])%([[:space:]]|$)/\\1\e[33m\\2\e[39m%\\3/g
@@ -74,9 +74,9 @@ s/(^|[[:space:]])([10 ][0-9])%([[:space:]]|$)/\\1\e[35m\\2\e[39m%\\3/g
 			fi
 		;;
 		--units)
-			if   (( units < 1 ))
+			if   (( 0 == opt_units ))
 			then
-				units=1
+				opt_units=1
 				sedfilter="${sedfilter}"$'
 s/(^|[[:space:]])([0-9.]+)([KMGTPEZYRQ])(B|iB)?([[:space:]]|$)/\\1\\2\e[1;36m\\3\\4\e[22;39m\\5/g
 s/(^|[[:space:]])([0-9.]+)([kmgtpezyrq])([[:space:]]|$)/\\1\\2\e[1;34m\\3\e[22;39m\\4/g
@@ -84,9 +84,9 @@ s/(^|[[:space:]])([0-9.]+)([kmgtpezyrq])([[:space:]]|$)/\\1\\2\e[1;34m\\3\e[22;3
 			fi
 		;;
 		--header)
-			if   (( header < 1 ))
+			if   (( 0 == opt_header ))
 			then
-				header=1
+				opt_header=1
 				sedfilter="${sedfilter}"$'
 1s/^/\e[97;100m/
 1s/$/\e[0m/
@@ -94,24 +94,23 @@ s/(^|[[:space:]])([0-9.]+)([kmgtpezyrq])([[:space:]]|$)/\\1\\2\e[1;34m\\3\e[22;3
 			fi
 		;;
 		--box)
-			if   (( box < 1 ))
+			if   (( 0 == opt_box ))
 			then
-				box=1
+				opt_box=1
 				sedfilter="${sedfilter}"$'
 s/[\u2500-\u257F]/\e[36m&\e[39m/g
 '
 			fi
 		;;
 		--show)
-			show=1
+			opt_show=1
 		;;
 	esac
 done
 
-if   (( show < 1 ))
+if   (( 0 == opt_show ))
 then
 	sed -E -e "${sedfilter}" < /dev/stdin
 else
 	echo "${sedfilter}"
 fi
-
