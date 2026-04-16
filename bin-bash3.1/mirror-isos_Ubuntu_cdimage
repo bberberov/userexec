@@ -6,7 +6,7 @@
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-dir="${1:-.}"
+dir="${1:-${USER_STORE_MIRROR_IMAGES:-.}}"
 
 user_mirror_file="${XDG_CONFIG_DIR:-${HOME}/.config}/user_mirrors/Ubuntu_cdimage"
 # shellcheck disable=SC2162

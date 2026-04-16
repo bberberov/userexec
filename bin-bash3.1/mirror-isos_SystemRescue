@@ -1,21 +1,25 @@
 #! /usr/bin/env bash
 
-# Copyright © 2025 Boian Berberov
+# Copyright © 2025, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-for command in 'curl' 'grep' 'htmlq'
+for cmd in \
+	curl \
+	grep \
+	htmlq \
+;
 do
-	if   ! which "${command}" > /dev/null 2>&1
+	if   ! which "${cmd}" > /dev/null 2>&1
 	then
-		echo -e "\e[1;31mERROR: ${command} command is not available\e[0m" > /dev/stderr
+		echo -e "\e[1;31mERROR: ${cmd} command is not available\e[0m" > /dev/stderr
 		exit 1
 	fi
 done
 
-dir="${1:-.}"
+dir="${1:-${USER_STORE_MIRROR_IMAGES:-.}}"
 
 dll=$(curl --silent 'https://www.system-rescue.org/Download/' | htmlq --base 'https://www.system-rescue.org/Download/' --attribute href '#download-links + table td + td a' | grep -E -v '\.(iso\.asc|iso/download)')
 
