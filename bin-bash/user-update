@@ -1,0 +1,20 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+for dir in ${HOME}/user/config/public ${HOME}/user/exec/public
+do
+	echo
+	if   [[ -e "${dir}/.git" && 'true' == "$(git -C "${dir}" rev-parse --is-inside-work-tree)" ]]
+	then
+		echo "Updating ${dir} ..."
+		echo
+		command git -C "${dir}" pull --ff-only
+		echo
+		command git -C "${dir}" -c status.relativePaths=false status --short --branch --ahead-behind
+	fi
+done
