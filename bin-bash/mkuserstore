@@ -1,0 +1,95 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+declare -r userstore="
+	audio
+	audio/albums
+	audio/books
+	audio/ringtones
+	audio/singles
+	audio/soundtracks
+	audio/youtube
+	image
+	image/composites
+	image/graphics
+	image/icons
+	image/infographics
+	image/photographs
+	image/photographs/family
+	image/photographs/friends
+	image/photographs/mine
+	image/photographs/stock
+	image/social
+	image/wallpaper
+	mirror
+	mirror/vcs
+	mirror/images
+	mirror/repo
+	software
+	software/OSes
+	software/firmware
+	software/packages
+	text
+	text/books
+	text/cheatsheets
+	text/datasheets
+	text/manuals
+	video
+	video/movies
+	video/produced
+	video/recordings
+	video/tv
+"
+
+declare -i opt_dry_run=0
+
+storedir=''
+
+case "${1}" in
+	--bash-completion)
+		echo "${userstore}"
+		exit 0
+	;;
+	--dry-run)
+		opt_dry_run=1
+		shift
+	;;
+	. | .. | ./* | ../* | /* )
+		storedir="${1}"
+		shift
+	;;
+esac
+
+for in_dir in "$@"
+do
+	compgen -V userstore_apply -W "${userstore}" -- "${in_dir}"
+	for out_dir in "${userstore_apply[@]}"
+	do
+		if   [[ -n "${storedir}" ]]
+		then
+			join_dir="${storedir}/${out_dir}"
+			join_dir="${join_dir//\/\//\/}"
+		else
+			join_dir="${out_dir}"
+		fi
+
+		if   [[ -d "${join_dir}" ]]
+		then
+			echo "Skipping ${join_dir}"
+		else
+			if   (( 0 == opt_dry_run ))
+			then
+				echo "Creating ${join_dir}"
+				mkdir -p "${join_dir}"
+			else
+				echo "Creating ${join_dir} (dry-run)"
+				echo mkdir -p "${join_dir}"
+			fi
+		fi
+	done
+done

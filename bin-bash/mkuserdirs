@@ -1,0 +1,88 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+user_domain="${user_domain:-public}"
+user_entity="${user_entity:-Personal}"
+
+declare -r userdirs="
+	${HOME}/npm
+	${HOME}/pip
+	${HOME}/user
+	${HOME}/user/config
+	${HOME}/user/config/${user_domain}
+	${HOME}/user/config/local
+	${HOME}/user/desk
+	${HOME}/user/dispose
+	${HOME}/user/exec
+	${HOME}/user/exec/${user_domain}
+	${HOME}/user/exec/local
+	${HOME}/user/project
+	${HOME}/user/project/${user_entity}
+	/srv/user/${USER}
+	/srv/user/${USER}/archive
+	/srv/user/${USER}/archive/${user_entity}
+	/srv/user/${USER}/backup
+	/srv/user/${USER}/dispose
+	/srv/user/${USER}/inbox
+	/srv/user/${USER}/inbox/download
+	/srv/user/${USER}/inbox/file
+	/srv/user/${USER}/inbox/print
+	/srv/user/${USER}/inbox/rip
+	/srv/user/${USER}/inbox/scan
+	/srv/user/${USER}/inbox/screenshot
+	/srv/user/${USER}/obs
+	/srv/user/${USER}/pim
+	/srv/user/${USER}/pim/${user_domain}
+	/srv/user/${USER}/someday
+	/srv/user/${USER}/someday/${user_entity}
+	/srv/user/${USER}/vcs
+	/srv/user/${USER}/vcs/_local
+	/srv/user/${USER}/vcs/_multi
+	/srv/user/${USER}/vcs/bitbucket.org
+	/srv/user/${USER}/vcs/gist.github.com
+	/srv/user/${USER}/vcs/github.com
+	/srv/user/${USER}/vcs/gitlab.com
+	/srv/user/${USER}/vcs/invent.kde.org
+	/srv/user/${USER}/vcs/launchpad.net
+	/srv/user/${USER}/vcs/repo.or.cz
+	/srv/user/${USER}/vcs/sourceforge.net
+"
+
+declare -i opt_dry_run=0
+
+case "${1}" in
+	--bash-completion)
+		echo "${userdirs}"
+		exit 0
+	;;
+	--dry-run)
+		opt_dry_run=1
+		shift
+	;;
+esac
+
+for in_dir in "$@"
+do
+	compgen -V userdirs_apply -W "${userdirs}" -- "${in_dir}"
+	for out_dir in "${userdirs_apply[@]}"
+	do
+		if   [[ -d "${out_dir}" ]]
+		then
+			echo "Skipping ${out_dir}"
+		else
+			if   (( 0 == opt_dry_run ))
+			then
+				echo "Creating ${out_dir}"
+				mkdir -p "${out_dir}"
+			else
+				echo "Creating ${out_dir} (dry-run)"
+				echo mkdir -p "${out_dir}"
+			fi
+		fi
+	done
+done
