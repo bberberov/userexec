@@ -1,0 +1,49 @@
+#! /usr/bin/env bash
+
+# Copyright © 2025, 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+for cmd in \
+	curl \
+	sed \
+;
+do
+	if   ! which "${cmd}" > /dev/null 2>&1
+	then
+		echo -e "\e[1;31mERROR: ${cmd} command is not available\e[0m" > /dev/stderr
+		exit 1
+	fi
+done
+
+dir="${1:-${USER_STORE_MIRROR_IMAGES:-.}}"
+
+dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/rss?path=/clonezilla_live_stable' | sed -n -E -e '/      <link>/{ /\/source\//{ d; b; }; s/(      |\/download)<[^<>]*>//gp }' | head -2)"
+
+# shellcheck disable=SC2086
+wget -N \
+	-P "${dir}/Clonezilla/stable" \
+	${dll}
+
+dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/rss?path=/clonezilla_live_testing' | sed -n -E -e '/      <link>/{ /\/source\//{ d; b; }; s/(      |\/download)<[^<>]*>//gp }' | head -2)"
+
+# shellcheck disable=SC2086
+wget -N \
+	-P "${dir}/Clonezilla/testing" \
+	${dll}
+
+dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/rss?path=/clonezilla_live_alternative' | sed -n -E -e '/      <link>/{ /\/source\//{ d; b; }; s/(      |\/download)<[^<>]*>//gp }' | head -2)"
+
+# shellcheck disable=SC2086
+wget -N \
+	-P "${dir}/Clonezilla/alternative" \
+	${dll}
+
+dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/files/clonezilla_live_alternative_testing/' | sed -n -E -e '/      <link>/{ /\/source\//{ d; b; }; s/(      |\/download)<[^<>]*>//gp }' | head -2)"
+
+# shellcheck disable=SC2086
+wget -N \
+	-P "${dir}/Clonezilla/alternative_testing" \
+	${dll}
