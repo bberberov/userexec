@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2024, 2025 Boian Berberov
+# Copyright © 2024, 2025, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -47,7 +47,9 @@ complete -c \
 	which-ll \
 	which-rpm \
 	which-rpm-else \
+;
 
 # Usernames
 complete -u \
 	id-multiline \
+;
