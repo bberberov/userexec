@@ -15,6 +15,9 @@ user_mirror_file="${XDG_CONFIG_DIR:-${HOME}/.config}/user_mirrors/OPNsense"
 mirror="${2:-${user_mirror:-https://pkg.opnsense.org/releases/mirror}}"
 
 wget -r -l 1 -np -N -e robots=off \
+	-e 'dot_bytes = 4m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/OPNsense" \
 	-nd \
 	--reject-regex 'C=|-nano-|-serial-' \

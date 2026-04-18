@@ -52,5 +52,8 @@ done
 
 # shellcheck disable=SC2086
 wget -N \
+	-e 'dot_bytes = 2m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${fulldir}/${ver}" \
 	${dll}

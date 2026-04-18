@@ -24,5 +24,8 @@ dll="$(curl --silent 'https://sourceforge.net/projects/gparted/rss?path=/gparted
 
 # shellcheck disable=SC2086
 wget -N \
+	-e 'dot_bytes = 4m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/GPartedLive" \
 	${dll}

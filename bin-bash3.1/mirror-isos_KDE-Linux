@@ -18,6 +18,9 @@ yesterday="$(date --date='yesterday' +%Y%m%d)"
 twodaysago="$(date --date='2 days ago' +%Y%m%d)"
 
 wget -r -l 1 -np -N -e robots=off \
+	-e 'dot_bytes = 16m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/KDE-Linux" \
 	-nd \
 	--reject-regex "C=|kdeos|sysupdate|kde-linux_${yesterday}|kde-linux_${twodaysago}" \

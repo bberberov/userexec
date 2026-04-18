@@ -18,6 +18,9 @@ dll="${mirror}/tumbleweed/iso/"
 
 # shellcheck disable=SC2086
 wget -r -l 1 -np -N -e robots=off \
+	-e 'dot_bytes = 16m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/openSUSE/Tumbleweed" \
 	-nd \
 	--reject-regex 'C=|/Changes\.|-Current.iso|-aarch64-|-ppc64le-|-s390x-|-MicroOS-|-GNOME-|-XFCE-|-Rescue-' \

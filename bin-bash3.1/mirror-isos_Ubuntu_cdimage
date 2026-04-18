@@ -26,6 +26,9 @@ do
 	;
 	do
 		wget -r -l 3 -np -N -e robots=off \
+			-e 'dot_bytes = 16m' \
+			-e 'dot_spacing = 8' \
+			-e 'dots_in_line = 64' \
 			-P "${dir}/${dist%/*}/${ver}" \
 			-nd \
 			--reject-regex 'C=|/snapshot[0-9]/|/snapshot-[0-9]/' \

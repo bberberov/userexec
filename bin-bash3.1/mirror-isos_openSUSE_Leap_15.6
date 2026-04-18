@@ -18,6 +18,9 @@ dll="${mirror}/distribution/leap/15.6/iso/"
 
 # shellcheck disable=SC2086
 wget -r -l 1 -np -N -e robots=off \
+	-e 'dot_bytes = 16m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/openSUSE/Leap/15.6" \
 	-nd \
 	--reject-regex 'C=|/Changes\.|-Current.iso|-x86_64-Media\.iso|-aarch64-|-ppc64le-|-s390x-' \

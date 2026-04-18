@@ -22,6 +22,9 @@ done
 
 # shellcheck disable=SC2086
 wget -r -l 3 -np -N -e robots=off \
+	-e 'dot_bytes = 16m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/Ubuntu" \
 	-nH \
 	--reject-regex 'C=|/netboot/|-netboot-|-wsl-' \

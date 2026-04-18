@@ -24,6 +24,9 @@ dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/rss?path=/clon
 
 # shellcheck disable=SC2086
 wget -N \
+	-e 'dot_bytes = 4m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/Clonezilla/stable" \
 	${dll}
 
@@ -31,6 +34,9 @@ dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/rss?path=/clon
 
 # shellcheck disable=SC2086
 wget -N \
+	-e 'dot_bytes = 4m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/Clonezilla/testing" \
 	${dll}
 
@@ -38,6 +44,9 @@ dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/rss?path=/clon
 
 # shellcheck disable=SC2086
 wget -N \
+	-e 'dot_bytes = 4m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/Clonezilla/alternative" \
 	${dll}
 
@@ -45,5 +54,8 @@ dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/files/clonezil
 
 # shellcheck disable=SC2086
 wget -N \
+	-e 'dot_bytes = 4m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
 	-P "${dir}/Clonezilla/alternative_testing" \
 	${dll}
