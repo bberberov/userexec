@@ -31,7 +31,7 @@ do
 			-e 'dots_in_line = 64' \
 			-P "${dir}/${dist%/*}/${ver}" \
 			-nd \
-			--reject-regex 'C=|/snapshot[0-9]/|/snapshot-[0-9]/' \
+			--reject-regex 'C=|/snapshot[0-9]$|/snapshot[0-9]/|/snapshot-[0-9]$|/snapshot-[0-9]/' \
 			-R '*.html' \
 			-R '*.html.tmp' \
 			-R '*.list' \

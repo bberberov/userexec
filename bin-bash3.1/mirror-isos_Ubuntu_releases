@@ -27,7 +27,7 @@ wget -r -l 3 -np -N -e robots=off \
 	-e 'dots_in_line = 64' \
 	-P "${dir}/Ubuntu" \
 	-nH \
-	--reject-regex 'C=|/netboot/|-netboot-|-wsl-' \
+	--reject-regex 'C=|/netboot$|/netboot/|-netboot-|-wsl-' \
 	-R '*.html' \
 	-R '*.html.tmp' \
 	-R '*.list' \

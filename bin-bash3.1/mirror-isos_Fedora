@@ -35,7 +35,7 @@ wget -r -l 3 -N -np -e robots=off \
 	-e 'dots_in_line = 64' \
 	-P "${dir}/Fedora" \
 	-nH --cut-dirs=$(( mirror_pn + 1 )) \
-	--reject-regex 'C=|/aarch64/|/os/|/images/|/source/|/debug/' \
+	--reject-regex 'C=|/aarch64$|/aarch64/|/os$|/os/|/images$|/images/|/source$|/source/|/debug$|/debug/' \
 	-R '*.html' \
 	-R '*.html.tmp' \
 	-R '*.iso.manifest' \
