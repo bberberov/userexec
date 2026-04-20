@@ -8,6 +8,7 @@
 
 for cmd in \
 	curl \
+	head \
 	sed \
 ;
 do
@@ -20,7 +21,7 @@ done
 
 dir="${1:-${USER_STORE_MIRROR_IMAGES:-.}}"
 
-dll="$(curl --silent 'https://sourceforge.net/projects/gparted/rss?path=/gparted-live-stable' | sed -n -E -e '/      <link>/{ /\/source\//{ d; b; }; s/(      |\/download)<[^<>]*>//gp }')"
+dll="$(curl --silent 'https://sourceforge.net/projects/gparted/rss?path=/gparted-live-stable' | sed -n -E -e '/      <link>/{ /\/source\//{ d; b; }; s/(      |\/download)<[^<>]*>//gp }' | head -3)"
 
 # shellcheck disable=SC2086
 wget -N \
