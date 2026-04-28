@@ -51,7 +51,7 @@ wget -N \
 	-P "${dir}/Clonezilla/alternative" \
 	${dll}
 
-dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/files/clonezilla_live_alternative_testing/' | sed -n -E -e '/      <link>/{ /\/source\//{ d; b; }; s/(      |\/download)<[^<>]*>//gp }' | head -2)"
+dll="$(curl --silent 'https://sourceforge.net/projects/clonezilla/rss?path=/clonezilla_live_alternative_testing' | sed -n -E -e '/      <link>/{ /\/source\//{ d; b; }; s/(      |\/download)<[^<>]*>//gp }' | head -2)"
 
 # shellcheck disable=SC2086
 wget -N \
