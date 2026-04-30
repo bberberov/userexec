@@ -1,0 +1,36 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+dir="${1:-${USER_STORE_MIRROR_PACKAGES:-.}}"
+
+user_mirror_file="${XDG_CONFIG_DIR:-${HOME}/.config}/user_mirrors/NVIDIA_Windows"
+# shellcheck disable=SC2162
+[[ -r "${user_mirror_file}" ]] && read user_mirror < "${user_mirror_file}"
+
+mirror="${2:-${user_mirror:-https://us.download.nvidia.com/Windows}}"
+
+dll=''
+
+# Windows XP
+dll+="
+	${mirror}/368.81/368.81-desktop-winxp-32bit-international.exe
+	${mirror}/368.81/368.81-desktop-winxp-64bit-international.exe
+"
+
+# Windows 7
+dll+="
+	${mirror}/391.35/391.35-desktop-win8-win7-64bit-international-whql.exe
+"
+
+wget -N \
+	-e 'dot_bytes = 4m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
+	-P "${dir}/NVIDIA/" \
+	-nH \
+	${dll}

@@ -1,0 +1,35 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+dir="${1:-${USER_STORE_MIRROR_REPOS:-.}}"
+
+user_mirror_file="${XDG_CONFIG_DIR:-${HOME}/.config}/user_mirrors/NVIDIA_CUDA"
+# shellcheck disable=SC2162
+[[ -r "${user_mirror_file}" ]] && read user_mirror < "${user_mirror_file}"
+
+mirror="${2:-${user_mirror:-https://developer.download.nvidia.com/compute/cuda/repos}}"
+mirror_pn=$(( $(tr -d -c '/' <<< "${mirror%/}" | wc -m) - 2 ))
+
+dll=''
+for os in \
+	'opensuse15/x86_64' \
+;
+do
+	dll+=" ${mirror}/${os}/"
+done
+
+wget -r -l 2 -np -N -e robots=off \
+	-e 'dot_bytes = 4m' \
+	-e 'dot_spacing = 8' \
+	-e 'dots_in_line = 64' \
+	-P "${dir}/NVIDIA/CUDA" \
+	-nH --cut-dirs=$(( mirror_pn )) \
+	-R 'version_*.json' \
+	-R '*.html' \
+	-R '*.html.tmp' \
+	${dll}
