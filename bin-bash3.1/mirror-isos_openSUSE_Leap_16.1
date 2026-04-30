@@ -26,6 +26,6 @@ wget -r -l 1 -np -N -e robots=off \
 	--reject-regex 'C=|/Changes\.|-x86_64\.install\.iso|-aarch64[-.]|-ppc64le[-.]|-s390x[-.]' \
 	-R '*.html' \
 	-R '*.html.tmp' \
+	-R '*.json' \
 	-R '*.mirrorlist' \
-	-R '*.iso' \
 	${dll}
