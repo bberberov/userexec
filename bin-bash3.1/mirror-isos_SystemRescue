@@ -24,7 +24,10 @@ dir="${1:-${USER_STORE_MIRROR_IMAGES:-.}}"
 dll=$(curl --silent 'https://www.system-rescue.org/Download/' | htmlq --base 'https://www.system-rescue.org/Download/' --attribute href '#download-links + table td + td a' | grep -E -v '\.(iso\.asc|iso/download)')
 
 # Legacy downloads
-for ver in '11.02' '11.03'
+for ver in \
+	11.02 \
+	11.03 \
+;
 do
 	dll+=" https://www.system-rescue.org/releases/${ver}/systemrescue-${ver}-amd64.iso.sha256"
 	dll+=" https://www.system-rescue.org/releases/${ver}/systemrescue-${ver}-amd64.iso.sha512"

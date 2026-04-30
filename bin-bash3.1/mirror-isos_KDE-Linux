@@ -32,8 +32,13 @@ wget -r -l 1 -np -N -e robots=off \
 if   pushd "${dir}/KDE-Linux/" > /dev/null
 then
 	dll=''
-
-	for file in *.efi *.erofs *.erofs.caibx *.raw *.zst
+	for file in \
+		*.efi \
+		*.erofs \
+		*.erofs.caibx \
+		*.raw \
+		*.zst \
+	;
 	do
 		chkfile="${file}.sha256"
 

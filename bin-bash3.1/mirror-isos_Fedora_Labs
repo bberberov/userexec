@@ -16,7 +16,10 @@ mirror="${2:-${user_mirror:-https://download.fedoraproject.org/pub/alt}}"
 mirror_pn=$(( $(tr -d -c '/' <<< "${mirror%/}" | wc -m) - 2 ))
 
 dll=''
-for ver in '42' '43'
+for ver in \
+	42 \
+	43 \
+;
 do
 	dll+=" ${mirror}/releases/${ver}/Labs/"
 done

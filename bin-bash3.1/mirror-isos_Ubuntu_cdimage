@@ -14,15 +14,18 @@ user_mirror_file="${XDG_CONFIG_DIR:-${HOME}/.config}/user_mirrors/Ubuntu_cdimage
 
 mirror="${2:-${user_mirror:-https://cdimage.ubuntu.com}}"
 
-for ver in '24.04' '26.04'
+for ver in \
+	24.04 \
+	26.04 \
+;
 do
 	for dist in \
-		'Kubuntu/kubuntu' \
-		'Lubuntu/lubuntu' \
-		'Ubuntu-Budgie/ubuntu-budgie' \
-		'Ubuntu-Cinnamon/ubuntucinnamon' \
-		'Ubuntu-Mate/ubuntu-mate' \
-		'Ubuntu-Studio/ubuntustudio' \
+		Kubuntu/kubuntu \
+		Lubuntu/lubuntu \
+		Ubuntu-Budgie/ubuntu-budgie \
+		Ubuntu-Cinnamon/ubuntucinnamon \
+		Ubuntu-Mate/ubuntu-mate \
+		Ubuntu-Studio/ubuntustudio \
 	;
 	do
 		wget -r -l 3 -np -N -e robots=off \

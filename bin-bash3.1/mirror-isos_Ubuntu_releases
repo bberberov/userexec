@@ -15,7 +15,10 @@ user_mirror_file="${XDG_CONFIG_DIR:-${HOME}/.config}/user_mirrors/Ubuntu_release
 mirror="${2:-${user_mirror:-https://releases.ubuntu.com}}"
 
 dll=''
-for ver in '24.04' '26.04'
+for ver in \
+	24.04 \
+	26.04 \
+;
 do
 	dll+=" ${mirror}/${ver}/"
 done

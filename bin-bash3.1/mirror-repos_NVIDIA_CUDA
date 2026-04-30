@@ -17,7 +17,7 @@ mirror_pn=$(( $(tr -d -c '/' <<< "${mirror%/}" | wc -m) - 2 ))
 
 dll=''
 for os in \
-	'opensuse15/x86_64' \
+	opensuse15/x86_64 \
 ;
 do
 	dll+=" ${mirror}/${os}/"
