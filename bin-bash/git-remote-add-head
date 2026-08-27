@@ -1,0 +1,16 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+remote_head="$(command git ls-remote --symref "${2}" HEAD | command sed -n -e '1{ s/\tHEAD//; s@ref: refs/heads/@@p }')"
+
+if   [[ -n "${remote_head:-}" ]]
+then
+	command git remote add -t "${remote_head}" -m "${remote_head}" "${1}" "${2}"
+else
+	echo 'fatal: HEAD not found on remote'
+fi
