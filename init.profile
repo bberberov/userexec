@@ -1,12 +1,12 @@
 #! /bin/sh
 
-# Copyright © 2024, 2025 Boian Berberov
+# Copyright © 2024, 2025, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-if   ! which realpath > /dev/null 2>&1 || ! which dirname > /dev/null 2>&1
+if   ! type 'realpath' > '/dev/null' 2>&1 || ! type 'dirname' > '/dev/null' 2>&1
 then
 	exit 0
 fi
@@ -97,7 +97,7 @@ then
 fi
 
 # Python
-if   which python3 > /dev/null 2>&1
+if   type 'python3' > '/dev/null' 2>&1
 then
 	check_and_set_pre "${origin}/bin-python3"
 fi
