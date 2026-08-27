@@ -11,8 +11,7 @@ then
 	exit 0
 fi
 
-# BASH_VERSION in 3.0
-if   [[ -n "${BASH_VERSION}" ]]
+if   (( 3 <= BASH_VERSINFO[0] ))
 then
 	origin="$( realpath "$( dirname "${BASH_SOURCE[0]}" )" )"
 else

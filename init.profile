@@ -13,7 +13,12 @@ fi
 
 if   test -n "${BASH_VERSION}"
 then
-	origin="$( realpath "$( dirname "${BASH_SOURCE[0]}" )" )"
+	if   (( 3 <= BASH_VERSINFO[0] ))
+	then
+		origin="$( realpath "$( dirname "${BASH_SOURCE[0]}" )" )"
+	else
+		origin="$( realpath "$( dirname "${0}" )" )"
+	fi
 else
 	origin="$( realpath "$( dirname "${0}" )" )"
 fi
