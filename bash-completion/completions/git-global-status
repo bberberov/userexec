@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# Copyright © 2024 Boian Berberov
+# Copyright © 2024, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -9,13 +9,14 @@
 _git_global_status()
 {
 	__gitcomp '
+		--bare
 		--origin
 		--path
-		--git-dir
 		--repo
 		--worktree
 		--no-ab
 		--status
+		--stash
 		--upstream
 		--no-untracked
 	'
