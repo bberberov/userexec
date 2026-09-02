@@ -11,6 +11,7 @@ userdir="/srv/user/${SUDO_USER:-${USER}}"
 repo_name='userexec.git'
 repo_path="github.com/bberberov/${repo_name}"
 perm_repo="${userdir}/vcs/${repo_path}"
+# shellcheck disable=SC2016
 repo_tree_f='${HOME}/user/exec/'"${domain}"
 repo_tree_e="${HOME}/user/exec/${domain}"
 
@@ -22,9 +23,14 @@ for cmd in \
 	sudo \
 ;
 do
-	if   ! which "${cmd}" > /dev/null 2>&1
+	if   ! type -fP "${cmd}" > '/dev/null' 2>&1
 	then
-		echo "ERROR: command ${cmd} not found"
+		if   (( 4 <= USER_COLORTERM ))
+		then
+			echo -e "\e[31mERROR: command ${cmd} not found\e[0m"
+		else
+			echo "ERROR: command ${cmd} not found"
+		fi
 	fi
 done
 
@@ -42,10 +48,10 @@ then
 			[[ -d "${userdir}" ]] || sudo mkdir -p "${userdir}"
 			[[ -O "${userdir}" && -G "${userdir}" ]] || sudo bash -c '[[ -n "${SUDO_UID}" ]] && chown "${SUDO_UID}:${SUDO_GID}" '"${userdir}"
 			[[ 700 -eq "$(stat --printf=%a "${userdir}")" ]] || chmod 700 "${userdir}"
-			[[ -d "${perm_repo%/${repo_name}}" ]] || mkdir -p "${perm_repo%/${repo_name}}"
+			[[ -d "${perm_repo%"/${repo_name}"}" ]] || mkdir -p "${perm_repo%"/${repo_name}"}"
 
 			# Bare clone and permanent tree setup
-			git -C "${perm_repo%/${repo_name}}" clone-bare "https://${repo_path}"
+			git -C "${perm_repo%"/${repo_name}"}" clone-bare "https://${repo_path}"
 		else
 			echo 'Cannot find `./init.profile`.  Run the script from the top level.'
 			exit 1
