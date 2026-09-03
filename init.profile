@@ -39,21 +39,27 @@ check_and_set_post()
 	fi
 }
 
-# Clean if/when re-sourcing, Bash 2.0 compatible
-new_PATH=":${PATH}:"
-pattern=":${origin}/bin-sh:";       new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${origin}/bin-bash:";     new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${origin}/bin-bash3:";    new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${origin}/bin-bash3.1:";  new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${origin}/bin-bash3.2:";  new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${origin}/bin-bash4:";    new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${origin}/bin-bash4.2:";  new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${origin}/bin-bash5:";    new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${origin}/bin-python3:";  new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${HOME}/bin:";            new_PATH="${new_PATH/${pattern}/:}"
-pattern=":${HOME}/.local/bin:";     new_PATH="${new_PATH/${pattern}/:}"
-new_PATH="${new_PATH#:}"
-new_PATH="${new_PATH%:}"
+if   test -n "${BASH_VERSION}"
+then
+	# Clean if/when re-sourcing, Bash 2.0 compatible
+	new_PATH=":${PATH}:"
+	pattern=":${origin}/bin-sh:";       new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${origin}/bin-bash:";     new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${origin}/bin-bash3:";    new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${origin}/bin-bash3.1:";  new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${origin}/bin-bash3.2:";  new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${origin}/bin-bash4:";    new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${origin}/bin-bash4.2:";  new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${origin}/bin-bash5:";    new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${origin}/bin-python3:";  new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${HOME}/bin:";            new_PATH="${new_PATH/"${pattern}"/:}"
+	pattern=":${HOME}/.local/bin:";     new_PATH="${new_PATH/"${pattern}"/:}"
+	new_PATH="${new_PATH#:}"
+	new_PATH="${new_PATH%:}"
+else
+	# TODO FIXME
+	new_PATH="${PATH}"
+fi
 
 # Generic sh
 check_and_set_pre "${origin}/bin-sh"
@@ -113,12 +119,17 @@ check_and_set_pre "${HOME}/bin"
 
 export PATH="${new_PATH}"
 
-# Clean if/when re-sourcing, Bash 2.0 compatible
-new_PATH=":${MANPATH}:"
-pattern=":${origin}/man:";  new_PATH="${new_PATH/${pattern}/:}"
-new_PATH="${new_PATH#:}"
-new_PATH="${new_PATH%:}"
-
+if   test -n "${BASH_VERSION}"
+then
+	# Clean if/when re-sourcing, Bash 2.0 compatible
+	new_PATH=":${MANPATH}:"
+	pattern=":${origin}/man:";  new_PATH="${new_PATH/"${pattern}"/:}"
+	new_PATH="${new_PATH#:}"
+	new_PATH="${new_PATH%:}"
+else
+	# TODO FIXME
+	new_PATH="${MANPATH}"
+fi
 check_and_set_post "${origin}/man"
 
 export MANPATH="${new_PATH}"
