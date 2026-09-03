@@ -28,13 +28,13 @@ then
 		source "${bash_completion_dir}/bash_completion"
 	fi
 
-	if   [[ -n "${BASH_COMPLETION_USER_DIR}" ]]
+	if   [[ -n "${BASH_COMPLETION_USER_DIR:-}" ]]
 	then
 		if   [[ "${bash_completion_dir}" != "${BASH_COMPLETION_USER_DIR}" ]]
 		then
 			# Clean if/when re-sourcing, Bash 2.0 compatible
 			new_BASH_COMPLETION_USER_DIR=":${BASH_COMPLETION_USER_DIR}:"
-			pattern=":${bash_completion_dir}:";  new_PATH="${new_PATH/${pattern}/:}"
+			pattern=":${bash_completion_dir}:";  new_BASH_COMPLETION_USER_DIR="${new_BASH_COMPLETION_USER_DIR/"${pattern}"/:}"
 			new_BASH_COMPLETION_USER_DIR="${new_BASH_COMPLETION_USER_DIR#:}"
 			new_BASH_COMPLETION_USER_DIR="${new_BASH_COMPLETION_USER_DIR%:}"
 
