@@ -1,37 +1,44 @@
 #! /usr/bin/env bash
 
-# Copyright © 2021, 2022, 2024 Boian Berberov
+# Copyright © 2021, 2022, 2024, 2026 Boian Berberov
 #
 # Licensed under the EUPL-1.2 only.
 # License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
 # SPDX-License-Identifier: EUPL-1.2
 
-timestamp="`date +%F-%H-%M-%S`"
+function usage()
+{
+echo '
+usage: git init-bare <path> [template-repo]
+'
+}
 
-if   [[ -v TMPDIR && -d "${TMPDIR}" ]]
+timestamp="$(date +%F-%H-%M-%S)"
+
+if   [[ -n "${TMPDIR:-}" && -d "${TMPDIR}" ]]
 then
 	workdir="${TMPDIR}"
-elif [[ "`uname -s`" == 'Linux' && -d '/tmp' ]]
+elif [[ 'Linux' == "$(uname -s)" && -d '/tmp' ]]
 then
 	workdir='/tmp'
 fi
 
-if   [[ -v USER ]]
+if   [[ -n "${USER:-}" ]]
 then
 	prefix="${USER}"
-elif [[ -v USERNAME ]]
+elif [[ -n "${USERNAME:-}" ]]
 then
 	prefix="${USERNAME}"
-elif which whoami > /dev/null 2>&1
+elif type -fP 'whoami' > '/dev/null' 2>&1
 then
-	prefix="`whoami`"
+	prefix="$(whoami)"
 fi
 
-if   [[ -v workdir && -v prefix ]]
+if   [[ -n "${workdir:-}" && -n "${prefix:-}" ]]
 then
 	treedir="/${workdir}/${prefix}-git-init-${timestamp}"
 else
-	echo -e '\e[1;31mERROR: Unable to find a temporary directory for the initial checkout\e[0m' > /dev/stderr
+	echo -e '\e[1;31mERROR: Unable to find a temporary directory for the initial checkout\e[0m' > '/dev/stderr'
 	exit 1
 fi
 
@@ -40,26 +47,26 @@ case $# in
 		git init --separate-git-dir="$1" "${treedir}" \
 		&& touch "${treedir}/.gitignore" \
 		&& git --git-dir="$1" --work-tree="${treedir}" add . \
-		&& git --git-dir="$1" --work-tree="${treedir}" commit -m 'Initial Commit' > /dev/null \
+		&& git --git-dir="$1" --work-tree="${treedir}" commit -m 'Initial Commit' > '/dev/null' \
 		&& sed -i -e 's/bare = false/bare = true/' "$1/config" \
 		&& rm -rf "${treedir}" "$1/COMMIT_EDITMSG" \
 		&& git --git-dir="$1" --no-pager log --format=oneline
 	;;
 	2)
 		init_commit_src="init-commit-src-${timestamp}"
-		gitdir=`basename "$2"`
+		gitdir="$(basename "$2")"
 		git clone --depth 1 --separate-git-dir="$1" "$2" "${treedir}/${gitdir}" \
 		&& git --git-dir="$1" --work-tree="${treedir}" branch -m "${init_commit_src}" \
-		&& git --git-dir="$1" --work-tree="${treedir}" checkout --orphan `git config --default main --get init.defaultBranch` \
-		&& git --git-dir="$1" --work-tree="${treedir}" commit -m 'Initial Commit' > /dev/null \
-		&& git --git-dir="$1" --work-tree="${treedir}" branch -d "${init_commit_src}" > /dev/null 2>&1 \
-		&& git --git-dir="$1" --work-tree="${treedir}" remote remove `git config --default origin --get clone.defaultRemoteName` \
-		&& git --git-dir="$1" --work-tree="${treedir}" gc --aggressive > /dev/null 2>&1 \
+		&& git --git-dir="$1" --work-tree="${treedir}" checkout --orphan "$(git config --default main --get init.defaultBranch)" \
+		&& git --git-dir="$1" --work-tree="${treedir}" commit -m 'Initial Commit' > '/dev/null' \
+		&& git --git-dir="$1" --work-tree="${treedir}" branch -d "${init_commit_src}" > '/dev/null' 2>&1 \
+		&& git --git-dir="$1" --work-tree="${treedir}" remote remove "$(git config --default origin --get clone.defaultRemoteName)" \
+		&& git --git-dir="$1" --work-tree="${treedir}" gc --aggressive > '/dev/null' 2>&1 \
 		&& sed -i -e 's/bare = false/bare = true/' "$1/config" \
 		&& rm -rf "${treedir}" "$1/COMMIT_EDITMSG" "$1/shallow" "$1/refs/remotes" "$1/logs/refs/remotes" \
 		&& git --git-dir="$1" --no-pager log --format=oneline
 	;;
 	*)
-		echo 'usage: git init-bare <path> [template-repo]'
+		usage
 	;;
 esac
