@@ -37,7 +37,7 @@ done
 # Set up permanent repo and tree
 if   (( 1000 <= EUID ))
 then
-	if   [[ ! -d "${perm_repo}" ]] || ! git -C "${perm_repo}" rev-parse --git-dir > /dev/null 2>&1
+	if   [[ ! -d "${perm_repo}" ]] || ! git -C "${perm_repo}" rev-parse --git-dir > '/dev/null' 2>&1
 	then
 		if   [[ -f './init.profile' ]]
 		then
@@ -60,7 +60,7 @@ then
 		echo "Using permanent userexec repo: ${perm_repo}"
 	fi
 
-	if   [[ ! -d "${repo_tree_e}" ]] && ! git -C "${repo_tree_e}" rev-parse --git-dir > /dev/null 2>&1
+	if   [[ ! -d "${repo_tree_e}" ]] && ! git -C "${repo_tree_e}" rev-parse --git-dir > '/dev/null' 2>&1
 	then
 		echo 'Setting up permanent userexec tree'
 		git -C "${perm_repo}" worktree add "${repo_tree_e}"
@@ -70,9 +70,9 @@ then
 else
 	if   [[ -n "${SUDO_USER}" ]]
 	then
-		if   [[ -d "${perm_repo}" ]] && git -C "${perm_repo}" rev-parse --git-dir > /dev/null 2>&1
+		if   [[ -d "${perm_repo}" ]] && git -C "${perm_repo}" rev-parse --git-dir > '/dev/null' 2>&1
 		then
-			if   [[ ! -d "${repo_tree_e}" ]] && ! git -C "${repo_tree_e}" rev-parse --git-dir > /dev/null 2>&1
+			if   [[ ! -d "${repo_tree_e}" ]] && ! git -C "${repo_tree_e}" rev-parse --git-dir > '/dev/null' 2>&1
 			then
 				echo "Setting up permanent userexec repo and tree from user ${SUDO_USER}"
 				git clone --shared --single-branch "${perm_repo}" "${repo_tree_e}"
@@ -88,17 +88,17 @@ else
 fi
 
 # Update .profile if needed
-if   ! grep -F 'source "'"${repo_tree_f}"'/init.profile"' "${HOME}/.profile" > /dev/null 2>&1
+if   ! grep -F '. "'"${repo_tree_f}"'/init.profile"' "${HOME}/.profile" > '/dev/null' 2>&1
 then
 	echo 'Adding .profile configuration'
 	echo '
-source "'"${repo_tree_f}"'/init.profile"' >> "${HOME}/.profile"
+. "'"${repo_tree_f}"'/init.profile"' >> "${HOME}/.profile"
 else
 	echo 'Skipping .profile configuration'
 fi
 
 # Update .bashrc if needed
-if   ! grep -F 'source "'"${repo_tree_f}"'/init.bashrc"' "${HOME}/.bashrc" > /dev/null 2>&1
+if   ! grep -F 'source "'"${repo_tree_f}"'/init.bashrc"' "${HOME}/.bashrc" > '/dev/null' 2>&1
 then
 	echo 'Adding .bashrc configuration'
 	echo '
