@@ -1,0 +1,94 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+_git_colors()
+{
+	__gitcomp "
+		color.blame.highlightRecent
+		\
+		\
+		color.advice.hint \
+		\
+		color.blame.repeatedLines \
+		\
+		color.branch.current \
+		color.branch.local \
+		color.branch.remote \
+		color.branch.upstream \
+		color.branch.plain \
+		color.branch.worktree \
+		\
+		color.decorate.HEAD \
+		color.decorate.branch \
+		color.decorate.remoteBranch \
+		color.decorate.tag \
+		color.decorate.stash \
+		color.decorate.grafted \
+		\
+		color.diff.context \
+		color.diff.plain \
+		color.diff.meta \
+		color.diff.frag \
+		color.diff.func \
+		color.diff.old \
+		color.diff.new \
+		color.diff.commit \
+		color.diff.whitespace \
+		color.diff.oldMoved \
+		color.diff.newMoved \
+		color.diff.oldMovedDimmed \
+		color.diff.oldMovedAlternative \
+		color.diff.oldMovedAlternativeDimmed \
+		color.diff.newMovedDimmed \
+		color.diff.newMovedAlternative \
+		color.diff.newMovedAlternativeDimmed \
+		color.diff.contextDimmed \
+		color.diff.oldDimmed \
+		color.diff.newDimmed \
+		color.diff.contextBold \
+		color.diff.oldBold \
+		color.diff.newBold \
+		\
+		color.grep.context \
+		color.grep.filename \
+		color.grep.function \
+		color.grep.lineNumber \
+		color.grep.column \
+		color.grep.match \
+		color.grep.matchContext \
+		color.grep.matchSelected \
+		color.grep.selected \
+		color.grep.separator \
+		\
+		color.interactive.prompt \
+		color.interactive.header \
+		color.interactive.help \
+		color.interactive.error \
+		color.interactive.plain \
+		\
+		color.push.error \
+		\
+		color.remote.hint \
+		color.remote.success \
+		color.remote.warning \
+		color.remote.error \
+		\
+		color.status.header \
+		color.status.added \
+		color.status.updated \
+		color.status.changed \
+		color.status.untracked \
+		color.status.branch \
+		color.status.nobranch \
+		color.status.localBranch \
+		color.status.remoteBranch \
+		color.status.unmerged \
+		\
+		color.transport.rejected \
+	"
+}

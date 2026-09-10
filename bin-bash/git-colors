@@ -1,0 +1,181 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+function alt_color()
+{
+	local orig_color="${1}"
+	local altr_color="${2}"
+
+	value="$(git config get --no-type "${orig_color}")"
+
+	if   [[ -z "${value:-}" ]]
+	then
+		value="$(git config get --no-type "${altr_color}")"
+
+		if   [[ -z "${value:-}" ]]
+		then
+			value="${value:-<default>}"
+			code="$(git config get --type color ${color})"
+		else
+			value="<set by ${altr_color}>"
+			code="$(git config get --type color "${altr_color}")"
+		fi
+	fi
+}
+
+tabs -40,+8,+8,+8,+8
+
+color='color.blame.highlightRecent'
+
+if   [[ "${1}${color#"${1}"}" == "color.blame.highlightRecent" ]]
+then
+	highlightrecent="$(git config get color.blame.highlightRecent 2> '/dev/null')"
+
+	if   [[ -n "${highlightrecent:-}" ]]
+	then
+		echo "${color}:"
+
+		while [[ -n "${highlightrecent:-}" ]]
+		do
+			value="${highlightrecent%%,*}"
+			highlightrecent="${highlightrecent#*,}"
+			tspan="${highlightrecent%%,*}"
+			highlightrecent="${highlightrecent#*,}"
+
+			value="${value//$'\t'/}"
+			tspan="${tspan//$'\t'/}"
+
+			code="$(git config get --type=color --default="${value}" color.does-not-exist-does-not-exist)"
+
+			# last, odd, values
+			if   [[ "${value}" == "${tspan}" ]]
+			then
+				tspan='now'
+
+				# terminal condition
+				highlightrecent=''
+			fi
+
+			echo -e "${code}${tspan}\e[0m\t= ${code}${value}\e[0m"
+		done
+	else
+		echo -e "${code}${color}\e[0m\t= ${code}${value}\e[0m"
+	fi
+fi
+
+for color in \
+	color.advice.hint \
+	\
+	color.blame.repeatedLines \
+	\
+	color.branch.current \
+	color.branch.local \
+	color.branch.remote \
+	color.branch.upstream \
+	color.branch.plain \
+	color.branch.worktree \
+	\
+	color.decorate.HEAD \
+	color.decorate.branch \
+	color.decorate.remoteBranch \
+	color.decorate.tag \
+	color.decorate.stash \
+	color.decorate.grafted \
+	\
+	color.diff.context \
+	color.diff.plain \
+	color.diff.meta \
+	color.diff.frag \
+	color.diff.func \
+	color.diff.old \
+	color.diff.new \
+	color.diff.commit \
+	color.diff.whitespace \
+	color.diff.oldMoved \
+	color.diff.newMoved \
+	color.diff.oldMovedDimmed \
+	color.diff.oldMovedAlternative \
+	color.diff.oldMovedAlternativeDimmed \
+	color.diff.newMovedDimmed \
+	color.diff.newMovedAlternative \
+	color.diff.newMovedAlternativeDimmed \
+	color.diff.contextDimmed \
+	color.diff.oldDimmed \
+	color.diff.newDimmed \
+	color.diff.contextBold \
+	color.diff.oldBold \
+	color.diff.newBold \
+	\
+	color.grep.context \
+	color.grep.filename \
+	color.grep.function \
+	color.grep.lineNumber \
+	color.grep.column \
+	color.grep.match \
+	color.grep.matchContext \
+	color.grep.matchSelected \
+	color.grep.selected \
+	color.grep.separator \
+	\
+	color.interactive.prompt \
+	color.interactive.header \
+	color.interactive.help \
+	color.interactive.error \
+	color.interactive.plain \
+	\
+	color.push.error \
+	\
+	color.remote.hint \
+	color.remote.success \
+	color.remote.warning \
+	color.remote.error \
+	\
+	color.status.header \
+	color.status.added \
+	color.status.updated \
+	color.status.changed \
+	color.status.untracked \
+	color.status.branch \
+	color.status.nobranch \
+	color.status.localBranch \
+	color.status.remoteBranch \
+	color.status.unmerged \
+	\
+	color.transport.rejected \
+;
+do
+	if   [[ "${1}${color#"${1}"}" == "${color}" ]]
+	then
+		new_section="${color%.*}"
+		if   [[ "${section}" != "${new_section}" ]]
+		then
+			echo
+		fi
+
+		# Special cases
+		case "${color}" in
+			color.status.added )
+				alt_color "${color}" 'color.status.updated'
+			;;
+			color.status.updated )
+				alt_color "${color}" 'color.status.added'
+			;;
+			* )
+				value="$(git config get --no-type "${color}")"
+				value="${value:-<default>}"
+				code="$(git config get --type color "${color}")"
+			;;
+		esac
+
+		echo -e "${code}${color}\e[0m\t= ${code}${value}\e[0m"
+
+		section="${new_section}"
+	fi
+done
+
+tabs "${USER_TABS}"
