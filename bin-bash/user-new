@@ -1,0 +1,27 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+template_dir="$(xdg-user-dir TEMPLATES)/user-new"
+
+if   [[ -d "${template_dir}" ]]
+then
+	if   [[ -n "${1:-}" && -n "${2:-}" ]]
+	then
+		template_file="${template_dir}/${1}/${2}"
+		if   [[ -f "${template_file}" ]]
+		then
+			cat "${template_file}"
+		else
+			echo "Template not found in ${template_dir}" > '/dev/stderr'
+		fi
+	else
+		echo "Missing parameters" > '/dev/stderr'
+	fi
+else
+	echo "No templates found in ${template_dir}" > '/dev/stderr'
+fi

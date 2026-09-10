@@ -1,0 +1,26 @@
+#! /usr/bin/env bash
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+_comp_cmd_user-new()
+{
+	local template_dir="$(xdg-user-dir TEMPLATES)/user-new"
+
+	if   [[ -d "${template_dir}" ]]
+	then
+		case ${COMP_CWORD} in
+			1)
+				COMPREPLY=( $(compgen -W "$(ls -1A "${template_dir}/")" -- "${COMP_WORDS[COMP_CWORD]}") )
+			;;
+			2)
+				COMPREPLY=( $(compgen -W "$(ls -1A "${template_dir}/${3}/")" -- "${COMP_WORDS[COMP_CWORD]}") )
+			;;
+		esac
+	fi
+
+	return 0
+} && complete -F _comp_cmd_user-new user-new
