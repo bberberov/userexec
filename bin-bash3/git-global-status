@@ -25,7 +25,7 @@ Options:
 '
 }
 
-declare -a dirs
+declare -a src_dirs
 declare -a repos
 declare -a unique_repos
 declare -a worktrees
@@ -36,19 +36,32 @@ opt_status='false'
 opt_stash='false'
 opt_upstream='false'
 opt_untracked='true'
+opt_ignored='true'
+opt_inline='true'
 max_repo_length=0
 max_repo_s_length=0
 max_worktree_length=0
 max_worktree_s_length=0
 columns="$(tput cols)"
 
-git_c_add="$(git config get --type=color --default=$'\e[32m' color.status.added)"
-git_c_chg="$(git config get --type=color --default=$'\e[33m' color.status.changed)"
-git_c_unt="$(git config get --type=color --default=$'\e[31m' color.status.untracked)"
-git_c_local="$(git config get --type=color --default=$'\e[32m' color.branch.local)"
-git_c_upstr="$(git config get --type=color --default=$'\e[34m' color.branch.upstream)"
-git_c_workt="$(git config get --type=color --default=$'\e[36m' color.branch.worktree)"
-git_c_plain="$(git config get --type=color --default=$'\e[1m' color.branch.plain)"
+git_c_added="$(git config get --type=color --default='green' color.status.added)"
+git_c_chged="$(git config get --type=color --default='yellow' color.status.changed)"
+git_c_untrk="$(git config get --type=color --default='red' color.status.untracked)"
+# NOTE: unofficial configuration
+git_c_upmod="$(git config get --type=color --default="cyan" color.status.both)"
+git_c_ignrd="$(git config get --type=color --default="$(git config get --no-type --default='red' color.status.untracked)" color.status.ignored)"
+git_c_ahead="$(git config get --type=color --default='brightmagenta' color.status.ahead)"
+git_c_bhind="$(git config get --type=color --default='brightyellow' color.status.behind)"
+git_c_nsync="$(git config get --type=color --default='brightblue' color.status.up-to-date)"
+
+git_c_currn="$(git config get --type=color --default='green' color.branch.current)"
+git_c_local="$(git config get --type=color --default='green' color.branch.local)"
+git_c_upstr="$(git config get --type=color --default='blue' color.branch.upstream)"
+git_c_workt="$(git config get --type=color --default='cyan' color.branch.worktree)"
+git_c_plain="$(git config get --type=color --default='bold' color.branch.plain)"
+
+git_c_stash="$(git config get --type=color --default='magenta' color.decorate.stash)"
+
 
 for opt in "$@"
 do
@@ -83,7 +96,13 @@ do
 		--no-untracked)
 			opt_untracked='false'
 		;;
-		--help|-?)
+		--no-ignored)
+			opt_ignored='false'
+		;;
+		--multiline)
+			opt_inline='false'
+		;;
+		--help | -?)
 			usage
 			exit 0
 		;;
@@ -91,13 +110,13 @@ do
 			if   [[ -d "${opt}" ]]
 			then
 				# Standardize src_path
-				dirs+=("$(realpath "${opt}")")
+				src_dirs+=("$(realpath "${opt}")")
 			else
 				echo -e "\
 \e[1;31mERROR: Unknown option or invalid path: ${opt}\e[0m
 
 Use --help to see the available options"\
-					> /dev/stderr
+					> '/dev/stderr'
 				exit 1
 			fi
 		;;
@@ -107,35 +126,180 @@ done
 setup_tabs()
 {
 	local opt_disppath="${1}"
-	local tgt_path="${2}"
+	local tgt_type="${2}"
 
 	local extra_tabs='+8,+8,+8,+8,+8,+8,+8,+8,+8,+8,+8,+8,+8,+8,+8,+8,+8,+8,+8'
 
-	case "${opt_disppath}" in
-		origin)
-			tabs $(( 8 < columns / 3 ? columns / 3 : 8 )),"${extra_tabs}"
-		;;
-		path)
-			case "${tgt_path}" in
-				repo)
-					tabs $(( 5 < max_repo_length ? max_repo_length + 3 : 8 )),"${extra_tabs}"
-				;;
-				worktree)
-					tabs $(( 5 < max_worktree_length ? max_worktree_length + 3 : 8 )),"${extra_tabs}"
-				;;
-			esac
-		;;
-		repo)
-			tabs $(( 5 < max_repo_s_length ? max_repo_s_length + 3 : 8 )),"${extra_tabs}"
-		;;
-		worktree)
-			tabs $(( 5 < max_worktree_s_length ? max_worktree_s_length + 3 : 8 )),"${extra_tabs}"
-		;;
-		*)
-			echo "Invalid parameter at ${LINENO}" > /dev/stderr
-			exit 1
-		;;
-	esac
+	if   [[ 'true' == "${opt_inline}" ]]
+	then
+		case "${opt_disppath}" in
+			origin)
+				tabs $(( 8 < columns / 3 ? columns / 3 : 8 )),"${extra_tabs}"
+			;;
+			path)
+				case "${tgt_type}" in
+					repo)
+						tabs $(( 5 < max_repo_length ? max_repo_length + 3 : 8 )),"${extra_tabs}"
+					;;
+					worktree)
+						tabs $(( 5 < max_worktree_length ? max_worktree_length + 3 : 8 )),"${extra_tabs}"
+					;;
+				esac
+			;;
+			repo)
+				tabs $(( 5 < max_repo_s_length ? max_repo_s_length + 3 : 8 )),"${extra_tabs}"
+			;;
+			worktree)
+				tabs $(( 5 < max_worktree_s_length ? max_worktree_s_length + 3 : 8 )),"${extra_tabs}"
+			;;
+			*)
+				echo "Invalid parameter at ${LINENO}" > '/dev/stderr'
+				exit 1
+			;;
+		esac
+	fi
+}
+
+inliner()
+{
+	if   [[ 'true' == "${opt_inline}" ]]
+	then
+		echo -ne ';\t'
+	else
+		echo -ne '\n\t'
+	fi
+}
+
+ahead_behind()
+{
+	local cur_ref="${1}"
+	local tgt_ref="${2}"
+
+	ahead=$(git rev-list --count "${tgt_ref}..${cur_ref}")
+	behind=$(git rev-list --count "${cur_ref}..${tgt_ref}")
+
+	if   (( 0 < ahead + behind ))
+	then
+		if   (( 0 < ahead ))
+		then
+			echo -ne "${git_c_ahead}${ahead} ahead\e[0m"
+
+			(( 0 < behind )) &&	echo -ne ' '
+		fi
+		if   (( 0 < behind ))
+		then
+			echo -ne "${git_c_bhind}${behind} behind\e[0m"
+		fi
+	else
+		echo -ne "${git_c_nsync}up to date\e[0m"
+	fi
+}
+
+tracking_ab()
+{
+	local cur_ref="${1}"
+
+	ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options "${cur_ref}"'@{upstream}')"
+	if   [[ -n "${ups_ref}" ]]
+	then
+		ahead_behind "${cur_ref}" "${ups_ref}"
+	else
+		echo -n 'not tracking'
+	fi
+}
+
+ref_ab()
+{
+	local cur_ref="${1}"
+	local tgt_ref="${2}"
+
+	ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options "${tgt_ref}")"
+	if   [[ -n "${ups_ref}" ]]
+	then
+		ahead_behind "${cur_ref}" "${ups_ref}"
+		echo -n " with ${tgt_ref}"
+	else
+		echo -n "no ${tgt_ref}"
+	fi
+}
+
+tree_status()
+{
+	if   [[ 'true' == "${opt_untracked}" ]]
+	then
+		untracked_param='--untracked-files=all'
+	else
+		untracked_param='--untracked-files=no'
+	fi
+
+	if   [[ 'true' == "${opt_ignored}" ]]
+	then
+		ignored_param='--ignored=traditional'
+	else
+		ignored_param='--ignored=no'
+	fi
+
+	status="$(git status "${untracked_param}" "${ignored_param}" --porcelain)"
+
+	status_indx="$(grep -G -c   '^[^ ][ ]'    <<< "${status}")"
+	status_tree="$(grep -G -c    '^[ ][^ ]'   <<< "${status}")"
+	status_both="$(grep -G -c '^[^ ?!][^ ?!]' <<< "${status}")"
+	status_untr="$(grep -G -c      '^??'      <<< "${status}")"
+	status_ignr="$(grep -G -c      '^!!'      <<< "${status}")"
+
+	status_all=$(( status_both + status_indx + status_tree + status_untr + status_ignr ))
+
+	separate=0
+
+	if   (( 0 < status_all ))
+	then
+		inliner
+
+		if   (( 0 < status_both ))
+		then
+			echo -ne "${git_c_upmod}${status_both} stage+mod\e[0m"
+
+			separate=1
+		fi
+		if   (( 0 < status_indx ))
+		then
+			(( 0 < separate )) && echo -n ' '
+
+			echo -ne "${git_c_added}${status_indx} staged\e[0m"
+
+			separate=1
+		fi
+		if   (( 0 < status_tree ))
+		then
+			(( 0 < separate )) && echo -n ' '
+
+			echo -ne "${git_c_chged}${status_tree} modified\e[0m"
+
+			separate=1
+		fi
+		if   (( 0 < status_untr ))
+		then
+			(( 0 < separate )) && echo -n ' '
+
+			echo -ne "${git_c_untrk}${status_untr} untracked\e[0m"
+
+			separate=1
+		fi
+		if   (( 0 < status_ignr ))
+		then
+			(( 0 < separate )) && echo -n ' '
+
+			echo -ne "${git_c_ignrd}${status_ignr} ignored\e[0m"
+		fi
+
+		if   (( 1 == status_all ))
+		then
+			echo -n ' file'
+		elif (( 1 <  status_all ))
+		then
+			echo -n ' files'
+		fi
+	fi
 }
 
 process_worktree()
@@ -147,14 +311,14 @@ process_worktree()
 
 	if   [[ -n "${worktree}" ]]
 	then
-		pushd "${worktree}" > /dev/null || exit 205
+		pushd "${worktree}"  > '/dev/null' || exit 205
 	else
-		pushd "${repo_path}" > /dev/null || exit 205
+		pushd "${repo_path}" > '/dev/null' || exit 205
 	fi
 
 	case "${display}" in
 		origin)
-			if   git remote | grep '^origin$' > /dev/null 2>&1
+			if   git remote | grep '^origin$' > '/dev/null' 2>&1
 			then
 				disppath="$(git remote get-url origin)"
 			else
@@ -190,7 +354,7 @@ process_worktree()
 			fi
 		;;
 		*)
-			echo "Invalid parameter at ${LINENO}" > /dev/stderr
+			echo "Invalid parameter at ${LINENO}" > '/dev/stderr'
 			exit 1
 		;;
 	esac
@@ -198,7 +362,9 @@ process_worktree()
 	if   [[ -n "${worktree}" || 'true' == "${opt_bare}" ]]
 	then
 		# Display tree/repo path
-		echo -ne "${path_color}${disppath}\e[0m"$'\t'
+		echo -ne "${path_color}${disppath}\e[0m"
+
+		[[ 'false' == "${opt_inline}" ]] && echo
 	fi
 
 	if   [[ -n "${worktree}" ]]
@@ -207,130 +373,55 @@ process_worktree()
 
 		if   [[ -n "${ref}" ]]
 		then
-			echo -ne "${git_c_local}${ref}\e[0m"
+			echo -ne "\t${git_c_currn}${ref}\e[0m"
 
 			if   [[ 'true' == "${opt_ab}" ]]
 			then
-				echo -ne ' is'
+				echo -ne ' is '
 
-				ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options "${ref}"@\{upstream\})"
-				if   [[ -n "${ups_ref}" ]]
-				then
-					ahead=$(git rev-list --count "${ups_ref}..${ref}")
-					behind=$(git rev-list --count "${ref}..${ups_ref}")
-					if   (( 0 < ahead + behind ))
-					then
-						if   (( 0 < ahead ))
-						then
-							echo -ne " \e[1;34m${ahead} ahead\e[0m"
-						fi
-						if   (( 0 < behind ))
-						then
-							echo -ne " \e[1;33m${behind} behind\e[0m"
-						fi
-					else
-						echo -n ' up to date'
-					fi
-				else
-					echo -n ' not tracking'
-				fi
+				tracking_ab "${ref}"
 			fi
 
 			if   [[ 'true' == "${opt_upstream}" ]]
 			then
-				if   git remote get-url upstream > /dev/null 2>&1
-				then
-					ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options UPSTREAM_HEAD)"
-					if   [ -n "${ups_ref}" ]
-					then
-						behind=$(git rev-list --count "${ref}..${ups_ref}")
-						if   (( 0 < behind ))
-						then
-							echo -ne ", \e[36m${behind} behind ${ups_ref}\e[0m"
-						else
-							echo -ne ", up to ${ups_ref}"
-						fi
-					else
-						ups_ref="$(git rev-parse --abbrev-ref -q --verify --end-of-options refs/UPSTREAM_HEAD)"
-						if   [[ -n "${ups_ref}" ]]
-						then
-							behind=$(git rev-list --count "${ref}..${ups_ref}")
-							if   (( 0 < behind ))
-							then
-								echo -ne ", \e[36m${behind} behind ${ups_ref}\e[0m"
-							else
-								echo -ne ", up to ${ups_ref}"
-							fi
-						else
-							echo -ne ', \e[1;31mno UPSTREAM_HEAD\e[0m'
-						fi
-					fi
-				else
-					echo -ne ', \e[1;34mno upstream\e[0m'
-				fi
+				echo -ne ', '
+
+				ref_ab "${ref}" 'refs/UPSTREAM_HEAD'
 			fi
 		else
-			echo -ne "${git_c_plain}is detached\e[0m"
+			echo -ne "\t${git_c_plain}is detached\e[0m"
 		fi
 
 		if   [[ 'true' == "${opt_status}" ]]
 		then
-			if   [[ 'true' == "${opt_untracked}" ]]
-			then
-				status="$(git status --untracked-files=all --porcelain)"
-			else
-				status="$(git status --untracked-files=no --porcelain)"
-			fi
-			status_index="$(grep -G -c   '^[^ ][ ]'    <<< "${status}")"
-			status_tree="$(grep -G -c    '^[ ][^ ]'   <<< "${status}")"
-			status_both="$(grep -G -c '^[^ ?!][^ ?!]' <<< "${status}")"
-			status_untr="$(grep -G -c      '^??'      <<< "${status}")"
-			if   (( 0 < status_both + status_index + status_tree + status_untr ))
-			then
-				echo -n $';\ttree has'
-				if   (( 0 < status_both ))
-				then
-					echo -ne " \e[36m${status_both} stage+mod\e[0m"
-				fi
-				if   (( 0 < status_index ))
-				then
-					echo -ne " ${git_c_add}${status_index} staged\e[0m"
-				fi
-				if   (( 0 < status_tree ))
-				then
-					echo -ne " ${git_c_chg}${status_tree} modified\e[0m"
-				fi
-				if   (( 0 < status_untr ))
-				then
-					echo -ne " ${git_c_unt}${status_untr} untracked\e[0m"
-				fi
-				echo -n ' files'
-			fi
+			tree_status
 		fi
 
 	elif [[ 'true' == "${opt_bare}" ]]
 	then
-		echo -n 'has no worktrees'
+		echo -ne '\thas no worktrees'
 	fi
 
 	if   [[ -n "${worktree}" || 'true' == "${opt_bare}" ]]
 	then
 		if   [[ 'true' == "${opt_stash}" ]]
 		then
-			if   git refs exists refs/stash 2>/dev/null
+			if   git refs exists 'refs/stash' 2> '/dev/null'
 			then
-				echo -ne ';\thas a stash'
+				inliner
+				echo -ne "has a ${git_c_stash}stash\e[0m"
 			fi
 		fi
 
+		# Final newline
 		echo
 	fi
 
-	popd > /dev/null || exit 205
+	popd > '/dev/null' || exit 205
 }
 
-pushd . > /dev/null
-for src_path in "${dirs[@]}"
+pushd . > '/dev/null'
+for src_path in "${src_dirs[@]}"
 do
 	# BEGIN Find potential repos
 
@@ -363,17 +454,35 @@ do
 			# Detached worktrees check
 			if   [[ -d "${repo_path}/worktrees" ]]
 			then
-				for worktree_file in $(find "${repo_path}/worktrees" -type f -name gitdir -print | sort)
+				for worktree_gitdir in $(find "${repo_path}/worktrees" -type f -name gitdir -print | sort)
 				do
-					worktree_git="$(< "${worktree_file}")"
-					worktree="${worktree_git%/.git}"
+					tree_gitfile="$(< "${worktree_gitdir}")"
+					worktree="${tree_gitfile%/.git}"
 
-					repos+=("${repo_path}")
-					worktrees+=("${worktree}")
+					tree_pre_gitdir="$(< "${tree_gitfile}")"
 
-					worktree_s="${worktree#"${src_path}/"}"
-					max_worktree_length=$(( max_worktree_length <= ${#worktree} ? ${#worktree} : max_worktree_length ))
-					max_worktree_s_length=$(( max_worktree_s_length <= ${#worktree_s} ? ${#worktree_s} : max_worktree_s_length ))
+					if   [[ "${tree_pre_gitdir}" =~ ^gitdir:[[:space:]] ]]
+					then
+						tree_gitdir="${tree_pre_gitdir#gitdir: }"
+
+						if   [[ -d "${tree_gitdir}" ]]
+						then
+							repos+=("${repo_path}")
+							worktrees+=("${worktree}")
+
+							worktree_s="${worktree#"${src_path}/"}"
+							max_worktree_length=$(( max_worktree_length <= ${#worktree} ? ${#worktree} : max_worktree_length ))
+							max_worktree_s_length=$(( max_worktree_s_length <= ${#worktree_s} ? ${#worktree_s} : max_worktree_s_length ))
+						else
+							if   [[ 'path' == "${opt_disppath:-repo}" ]]
+							then
+								disppath="${repo_path}"
+							else
+								disppath="${repo_shortpath}"
+							fi
+							echo -e "\e[1;31mRepo\e[0m ${git_c_local}${disppath}\e[0m \e[1;31m has a broken detached worktree\e[0m ${git_c_workt}${worktree}\e[0m"
+						fi
+					fi
 				done
 			fi
 
@@ -430,7 +539,7 @@ do
 
 			if   [[ -d "${tree_gitdir}" ]]
 			then
-				repo_path="$(git -C "${tree_gitdir}" rev-parse --git-common-dir)"
+				repo_path="$(git -C "${tree_gitdir}" rev-parse --git-common-dir 2> '/dev/null')"
 
 				# Don't list the worktree if it has already been found by the repo search
 				for test_repo in "${unique_repos[@]}"
@@ -455,11 +564,11 @@ do
 					max_worktree_s_length=$(( max_worktree_s_length <= ${#worktree_s} ? ${#worktree_s} : max_worktree_s_length ))
 				fi
 			else
-				if [[ 'path' == "${opt_disppath:-worktree}" ]]
+				if   [[ 'path' == "${opt_disppath:-worktree}" ]]
 				then
-					disppath=${worktree}
+					disppath="${worktree}"
 				else
-					disppath=${worktree#"${src_path}/"}
+					disppath="${worktree_s}"
 				fi
 				echo -e "\e[1;31mDetached tree\e[0m ${git_c_workt}${disppath}\e[0m \e[1;31mis invalid\e[0m"
 			fi
@@ -475,7 +584,7 @@ do
 
 	# END   Find potential detached worktrees
 done
-popd > /dev/null || exit 205
+popd > '/dev/null' || exit 205
 
 # Restore TABS
 tabs "${USER_TABS}"

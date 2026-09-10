@@ -19,5 +19,7 @@ _git_global_status()
 		--stash
 		--upstream
 		--no-untracked
+		--no-ignored
+		--multiline
 	'
 }
