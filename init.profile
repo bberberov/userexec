@@ -61,6 +61,18 @@ else
 	new_PATH="${PATH}"
 fi
 
+# sed
+if   type 'sed' > '/dev/null' 2>&1
+then
+	check_and_set_pre "${origin}/bin-sed"
+
+	# GNU sed
+	if   command sed --version > '/dev/null' 2>&1
+	then
+		check_and_set_pre "${origin}/bin-sed-gnu"
+	fi
+fi
+
 # Generic sh
 check_and_set_pre "${origin}/bin-sh"
 

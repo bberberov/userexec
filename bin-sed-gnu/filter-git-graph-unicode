@@ -1,0 +1,26 @@
+#! /usr/bin/env -S sed -f
+
+# Copyright © 2026 Boian Berberov
+#
+# Licensed under the EUPL-1.2 only.
+# License text: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+# SPDX-License-Identifier: EUPL-1.2
+
+# - to 0x2500
+s@-\x1B@\u\xE2\x94\x80\x1B@g
+
+# . to 0x256e
+s@m\.\x1B@m\xE2\x95\xAE\x1B@g
+
+# | to 0x2502
+s@|\x1B@\xE2\x94\x82\x1B@g
+
+# / to 0x2571
+s@/\x1B@\xE2\x95\xB1\x1B@g
+
+# \ to 0x2572
+s@\\\x1B@\xE2\x95\xB2\x1B@g
+
+# * to 0x25EF
+s@^\*@\xE2\x97\xAF@
+s@\x1B\[m \*@\x1B[m \xE2\x97\xAF@

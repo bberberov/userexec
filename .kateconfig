@@ -4,6 +4,9 @@ kate-wildcard(bin-bash/*): syntax Bash;
 kate-wildcard(bin-bash?/*): syntax Bash;
 kate-wildcard(bin-bash?.?/*): syntax Bash;
 
+kate-wildcard(bin-sed/*): syntax sed;
+kate-wildcard(bin-sed-gnu/*): syntax sed;
+
 kate-wildcard(bin-python3/*): syntax Python;
 
 kate-wildcard(init.bashrc): syntax Bash;
