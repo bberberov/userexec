@@ -420,6 +420,33 @@ process_worktree()
 	popd > '/dev/null' || exit 205
 }
 
+broken_worktree()
+{
+	case "${1}" in
+		repo )
+			if   [[ 'path' == "${opt_disppath:-repo}" ]]
+			then
+				disppath="${repo_path}"
+			else
+				disppath="${repo_shortpath}"
+			fi
+			echo -e "\e[1;31mRepo\e[0m ${git_c_local}${disppath}\e[0m \e[1;31m has a broken detached worktree\e[0m ${git_c_workt}${worktree}\e[0m"
+		;;
+		worktree )
+			if   [[ 'path' == "${opt_disppath:-worktree}" ]]
+			then
+				disppath="${worktree}"
+			else
+				disppath="${worktree_s}"
+			fi
+			echo -e "\e[1;31mDetached tree\e[0m ${git_c_workt}${disppath}\e[0m \e[1;31mis invalid\e[0m"
+		;;
+		* )
+			echo -e "\e[1;31mInvalid parameter \"${1}\" to function ${FUNCNAME[0]}\e[0m" > '/dev/stderr'
+			exit 1
+	esac
+}
+
 pushd . > '/dev/null'
 for src_path in "${src_dirs[@]}"
 do
@@ -459,29 +486,28 @@ do
 					tree_gitfile="$(< "${worktree_gitdir}")"
 					worktree="${tree_gitfile%/.git}"
 
-					tree_pre_gitdir="$(< "${tree_gitfile}")"
-
-					if   [[ "${tree_pre_gitdir}" =~ ^gitdir:[[:space:]] ]]
+					if   [[ -f "${tree_gitfile}" ]]
 					then
-						tree_gitdir="${tree_pre_gitdir#gitdir: }"
+						tree_pre_gitdir="$(< "${tree_gitfile}")"
 
-						if   [[ -d "${tree_gitdir}" ]]
+						if   [[ "${tree_pre_gitdir}" =~ ^gitdir:[[:space:]] ]]
 						then
-							repos+=("${repo_path}")
-							worktrees+=("${worktree}")
+							tree_gitdir="${tree_pre_gitdir#gitdir: }"
 
-							worktree_s="${worktree#"${src_path}/"}"
-							max_worktree_length=$(( max_worktree_length <= ${#worktree} ? ${#worktree} : max_worktree_length ))
-							max_worktree_s_length=$(( max_worktree_s_length <= ${#worktree_s} ? ${#worktree_s} : max_worktree_s_length ))
-						else
-							if   [[ 'path' == "${opt_disppath:-repo}" ]]
+							if   [[ -d "${tree_gitdir}" ]]
 							then
-								disppath="${repo_path}"
+								repos+=("${repo_path}")
+								worktrees+=("${worktree}")
+
+								worktree_s="${worktree#"${src_path}/"}"
+								max_worktree_length=$(( max_worktree_length <= ${#worktree} ? ${#worktree} : max_worktree_length ))
+								max_worktree_s_length=$(( max_worktree_s_length <= ${#worktree_s} ? ${#worktree_s} : max_worktree_s_length ))
 							else
-								disppath="${repo_shortpath}"
+								broken_worktree repo
 							fi
-							echo -e "\e[1;31mRepo\e[0m ${git_c_local}${disppath}\e[0m \e[1;31m has a broken detached worktree\e[0m ${git_c_workt}${worktree}\e[0m"
 						fi
+					else
+						broken_worktree repo
 					fi
 				done
 			fi
@@ -564,13 +590,7 @@ do
 					max_worktree_s_length=$(( max_worktree_s_length <= ${#worktree_s} ? ${#worktree_s} : max_worktree_s_length ))
 				fi
 			else
-				if   [[ 'path' == "${opt_disppath:-worktree}" ]]
-				then
-					disppath="${worktree}"
-				else
-					disppath="${worktree_s}"
-				fi
-				echo -e "\e[1;31mDetached tree\e[0m ${git_c_workt}${disppath}\e[0m \e[1;31mis invalid\e[0m"
+				broken_worktree worktree
 			fi
 		fi
 	done
