@@ -10,7 +10,7 @@ _git_chrono()
 {
 	case "${cur}" in
 		# Options
-		--*)
+		--* )
 			__gitcomp '
 				--linear-days
 				--linear-weeks
@@ -23,10 +23,9 @@ _git_chrono()
 			'
 			return
 		;;
-		*)
+		* )
 			__git_complete_index_file
+			return
 		;;
 	esac
-
-	__git_complete_index_file
 }

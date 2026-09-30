@@ -9,5 +9,4 @@
 _comp_cmd_mkuserstore()
 {
 	COMPREPLY=( $(compgen -W "$(mkuserstore --bash-completion)" -- "${COMP_WORDS[COMP_CWORD]}") )
-	return 0
 } && complete -F _comp_cmd_mkuserstore mkuserstore

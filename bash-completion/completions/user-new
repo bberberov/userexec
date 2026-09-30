@@ -21,6 +21,4 @@ _comp_cmd_user-new()
 			;;
 		esac
 	fi
-
-	return 0
 } && complete -F _comp_cmd_user-new user-new

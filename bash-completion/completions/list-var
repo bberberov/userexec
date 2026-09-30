@@ -30,5 +30,5 @@ _comp_cmd_list-var()
 		COMPREPLY=( $(compgen -W "${vars}" -- "${COMP_WORDS[COMP_CWORD]}") )
 	fi
 
-	return 0
+	return
 } && complete -F _comp_cmd_list-var list-var
